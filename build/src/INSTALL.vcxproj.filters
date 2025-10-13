@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\giler\OneDrive\Desktop\cpp\Zemita\build\CMakeFiles\979c8b14b45a6691dcc53d5b531dac8c\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{DD7AF2F8-F83B-3EA2-BB1F-8D0D69DA40BF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

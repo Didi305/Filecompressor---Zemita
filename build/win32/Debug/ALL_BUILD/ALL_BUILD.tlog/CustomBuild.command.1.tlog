@@ -1,0 +1,10 @@
+^C:\USERS\GILER\ONEDRIVE\DESKTOP\CPP\ZEMITA\CMAKELISTS.TXT
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/giler/OneDrive/Desktop/cpp/Zemita -BC:/Users/giler/OneDrive/Desktop/cpp/Zemita/build --check-stamp-file C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,10 @@
+^C:\USERS\GILER\ONEDRIVE\DESKTOP\CPP\ZEMITA\BUILD\CMAKEFILES\DA0F6423064EE1B0B8FD912B83915C8A\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/giler/OneDrive/Desktop/cpp/Zemita -BC:/Users/giler/OneDrive/Desktop/cpp/Zemita/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/Zemita.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
