@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <CustomBuild Include="C:\Users\giler\OneDrive\Desktop\cpp\Zemita\build\CMakeFiles\da0f6423064ee1b0b8fd912b83915c8a\generate.stamp.rule">
+    <CustomBuild Include="C:\Users\giler\OneDrive\Desktop\C++\Filecompressor---Zemita\build\CMakeFiles\fd8693577410f63aadfa3e577162163b\generate.stamp.rule">
       <Filter>CMake Rules</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="CMake Rules">
-      <UniqueIdentifier>{DD7AF2F8-F83B-3EA2-BB1F-8D0D69DA40BF}</UniqueIdentifier>
+      <UniqueIdentifier>{7EC1CF82-6910-30B5-B93C-51F87FA76A93}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

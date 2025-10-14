@@ -1,4 +1,5 @@
 # ---- Library (core) ----
+cmake_minimum_required(VERSION 4.0)
 add_library(zemita
   zemita.cpp
   container/container.cpp
@@ -19,9 +20,7 @@ target_compile_features(zemita PUBLIC cxx_std_20)
 
 # ---- CLI (optional) ----
 if(ZEMITA_BUILD_CLI)
-  add_executable(zemita_cli
-    cli/zemita_main.cpp
-  )
+  add_executable(zemita_cli CLI/zemita_main.cpp)
   target_link_libraries(zemita_cli PRIVATE zemita)
   set_target_properties(zemita_cli PROPERTIES OUTPUT_NAME zemita)
 endif()

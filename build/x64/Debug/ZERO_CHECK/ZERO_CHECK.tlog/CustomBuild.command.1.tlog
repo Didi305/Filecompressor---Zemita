@@ -1,0 +1,10 @@
+^C:\USERS\GILER\ONEDRIVE\DESKTOP\C++\FILECOMPRESSOR---ZEMITA\BUILD\CMAKEFILES\FD8693577410F63AADFA3E577162163B\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita -BC:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/Zemita.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

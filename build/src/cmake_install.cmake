@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/giler/OneDrive/Desktop/cpp/Zemita/src
+# Install script for directory: C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,25 +34,25 @@ endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/Debug/zemita.lib")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/Debug/zemita.lib")
   elseif(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/Release/zemita.lib")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/Release/zemita.lib")
   elseif(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/MinSizeRel/zemita.lib")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/MinSizeRel/zemita.lib")
   elseif(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/RelWithDebInfo/zemita.lib")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/RelWithDebInfo/zemita.lib")
   endif()
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/include/zemita")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE DIRECTORY FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/include/zemita")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita/zemitaTargets.cmake")
     file(DIFFERENT _cmake_export_file_changed FILES
          "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita/zemitaTargets.cmake"
-         "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets.cmake")
+         "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets.cmake")
     if(_cmake_export_file_changed)
       file(GLOB _cmake_old_config_files "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita/zemitaTargets-*.cmake")
       if(_cmake_old_config_files)
@@ -65,24 +65,24 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
     endif()
     unset(_cmake_export_file_changed)
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets.cmake")
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Dd][Ee][Bb][Uu][Gg])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-debug.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-debug.cmake")
   endif()
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Mm][Ii][Nn][Ss][Ii][Zz][Ee][Rr][Ee][Ll])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-minsizerel.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-minsizerel.cmake")
   endif()
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ww][Ii][Tt][Hh][Dd][Ee][Bb][Ii][Nn][Ff][Oo])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-relwithdebinfo.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-relwithdebinfo.cmake")
   endif()
   if(CMAKE_INSTALL_CONFIG_NAME MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
-    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-release.cmake")
+    file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/zemita" TYPE FILE FILES "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/Export/8632aaaa289e1c541308f386ad19f378/zemitaTargets-release.cmake")
   endif()
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
 if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "C:/Users/giler/OneDrive/Desktop/cpp/Zemita/build/src/install_local_manifest.txt"
+  file(WRITE "C:/Users/giler/OneDrive/Desktop/C++/Filecompressor---Zemita/build/src/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

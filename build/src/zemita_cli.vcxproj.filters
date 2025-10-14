@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="C:\Users\giler\OneDrive\Desktop\cpp\Zemita\src\cli\zemita_main.cpp">
+    <ClCompile Include="C:\Users\giler\OneDrive\Desktop\C++\Filecompressor---Zemita\src\CLI\zemita_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\giler\OneDrive\Desktop\cpp\Zemita\src\CMakeLists.txt" />
+    <CustomBuild Include="C:\Users\giler\OneDrive\Desktop\C++\Filecompressor---Zemita\src\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{2EDEEA05-9FBE-3D8F-8455-37945AEA1378}</UniqueIdentifier>
+      <UniqueIdentifier>{66F44819-CBE8-3E2B-8379-82097017BF57}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
