@@ -4,10 +4,10 @@
 #include <filesystem>
 
 struct GlobalHeader{
-    const char magicBytes[4] = {'Z', 'E', 'M', '1'};
-    uint64_t original_size;
+    char magicBytes[4] = {'Z', 'E', 'M', '1'};
+    uint32_t original_size;
     uint32_t checksum_id = 0;
-    uint16_t block_size = 4 * 1024 * 1024;
+    uint32_t block_size = 64 * 1024;
     uint16_t version = 1;
     int codec_id = 0;
 };
@@ -40,6 +40,9 @@ private:
 class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
+    GlobalHeader readGlobalHeader();
+    BlockHeader readBlock();
+    ~ContainerReader();
 private:
     std::ifstream in_;
 };

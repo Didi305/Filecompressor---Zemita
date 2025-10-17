@@ -5,7 +5,7 @@
 #include <iostream>
 #include "zemita/container.hpp"
 
-ContainerWriter::ContainerWriter(const std::string& out_path) : out_(out_path, std::ios::binary | std::ios::trunc){
+ContainerWriter::ContainerWriter(const std::string& out_path) : out_(out_path, std::ios::binary){
     if (!out_) throw std::runtime_error("Failed to open output file: " + out_path);
 }
 
@@ -24,5 +24,29 @@ void ContainerWriter::writeGlobalHeader(GlobalHeader& gHeader){
 
 void ContainerWriter::writeBlock(BlockHeader& bHeader, std::vector<char>& data){
     out_.write(reinterpret_cast<char*>(&bHeader), sizeof(bHeader));
-    out_.write(data.data(), sizeof(data));
+    out_.write(data.data(), data.size());
+}
+
+
+ContainerReader::ContainerReader(const std::string& input_path) : in_(std::ifstream(input_path)) {
+    if (!in_) throw std::runtime_error("no input path");
+}
+
+ContainerReader::~ContainerReader() {
+    if (in_.is_open()) in_.close();
+}
+
+GlobalHeader ContainerReader::readGlobalHeader(){
+    GlobalHeader gHeader{};
+    char magicBytez[4];
+    in_.read(magicBytez, 4);
+    if (gHeader.magicBytes == magicBytez) std::cout << "typ shit";
+    return gHeader;
+}
+
+
+
+BlockHeader ContainerReader::readBlock(){
+    BlockHeader bHeader;
+    return bHeader;
 }

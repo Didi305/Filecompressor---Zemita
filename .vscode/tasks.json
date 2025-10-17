@@ -2,11 +2,18 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build & Run Zemita",
+      "label": "clean-build",
       "type": "shell",
-      "command": "cmake --build build --config Debug && build\\src\\Debug\\zemita.exe test\\zbel.txt",
-      "group": "build",
-      "problemMatcher": []
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "if exist build (rmdir /s /q build) && mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --config Release"
+      ],
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

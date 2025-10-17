@@ -1,0 +1,16 @@
+# Build artifacts
+/build/
+/build-*/
+CMakeFiles/
+CMakeCache.txt
+*.vcxproj
+*.vcxproj.filters
+*.sln
+*.ninja
+*.obj
+*.exe
+*.pdb
+*.dll
+*.lib
+*.log
+*.cache

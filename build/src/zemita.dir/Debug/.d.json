@@ -1,10 +1,10 @@
 {
     "Version": "1.2",
     "Data": {
-        "Source": "c:\\users\\giler\\onedrive\\desktop\\c++\\filecompressor---zemita\\src\\zemita.cpp",
+        "Source": "c:\\users\\giler\\desktop\\c++\\filecompressor---zemita\\src\\zemita.cpp",
         "ProvidedModule": "",
         "Includes": [
-            "c:\\users\\giler\\onedrive\\desktop\\c++\\filecompressor---zemita\\include\\zemita\\zemita.hpp",
+            "c:\\users\\giler\\desktop\\c++\\filecompressor---zemita\\include\\zemita\\zemita.hpp",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\iostream",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\yvals_core.h",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\vcruntime.h",
@@ -115,7 +115,7 @@
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\clocale",
             "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\locale.h",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\ostream",
-            "c:\\users\\giler\\onedrive\\desktop\\c++\\filecompressor---zemita\\include\\zemita\\container.hpp",
+            "c:\\users\\giler\\desktop\\c++\\filecompressor---zemita\\include\\zemita\\container.hpp",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\string",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\fstream",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\__msvc_filebuf.hpp",
@@ -151,7 +151,8 @@
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\optional",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\xsmf_control.h",
             "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\sstream",
-            "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\vector"
+            "c:\\program files\\microsoft visual studio\\2022\\community\\vc\\tools\\msvc\\14.43.34808\\include\\vector",
+            "c:\\users\\giler\\desktop\\c++\\filecompressor---zemita\\include\\zemita\\utils.hpp"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []
