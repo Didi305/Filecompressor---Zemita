@@ -1,6 +1,0 @@
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/CMakeFiles/INSTALL.dir
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/CMakeFiles/ZERO_CHECK.dir
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/zemita.dir
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/zemita_cli.dir
-C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build/src/CMakeFiles/INSTALL.dir
