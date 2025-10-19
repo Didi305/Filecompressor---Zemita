@@ -28,19 +28,18 @@ void ZemitaApp::compress(const std::string& input_path) {
     int i = 0;
     uint32_t uncompressed_size = gHeader.original_size;
     while (uncompressed_size > 0){
-        std::cout << "hamid original \n " << gHeader.original_size;
+
         BlockHeader bHeader{};
         bHeader.block_seq_num = i;
         bHeader.compressed_size = std::min(uncompressed_size, gHeader.block_size);
-        std::cout << "compressed size: " << bHeader.compressed_size << " and uncompressed size: " << uncompressed_size << " and original size is: " << gHeader.original_size << std::endl;
+        
         bHeader.uncompressed_size = uncompressed_size;
         uint32_t diff = gHeader.original_size - bHeader.uncompressed_size;
         uncompressed_size -= bHeader.compressed_size;
-        std::cout << "compressed size: " << bHeader.compressed_size << " and uncompressed size: " << bHeader.uncompressed_size << " and original size is: " << gHeader.original_size << std::endl;
+    
         
         std::vector<char> buffer(bHeader.compressed_size);
         bHeader.data = Utils::getDataBlock(input_reader, gHeader.original_size - bHeader.uncompressed_size, bHeader.compressed_size, buffer);
-        std::cout << "data d zeb after getting it: " << bHeader.data << std::endl;
         writer.writeBlock(bHeader);
         i++;
     }
@@ -59,17 +58,23 @@ void ZemitaApp::decompress(const std::string& input_path) {
     try {
         std::cerr << "File found: " << input_path << "\n";
         GlobalHeader gHeader = reader.readGlobalHeader();
+        auto numberOfBlocks = std::ceil((double)gHeader.original_size / (2 * 1024));
         Utils::printIntervalFromContainer(gHeader.magicBytes, 0 , 3);
         std::cout << "original size from reading: " << gHeader.original_size << "\n";
         std::cout << "block size from reading: " << gHeader.block_size << "\n";
         std::cout << "version from reading: " << gHeader.version << "\n";
         std::cout << "codec from reading: " << gHeader.codec_id << "\n";
-        std::cout << "numer of blockers" << std::ceil((double)652392 / (64 * 1024)) << "\n";
-        std::vector<BlockHeader> blocks = reader.readAllBlocks(std::ceil(std::ceil((double)gHeader.original_size / (64 * 1024))));
-        for (auto b : blocks){
-            std::cout << "uncompressed size in the block: " << b.block_seq_num << " is " << b.uncompressed_size << "\n";
+        std::cout << "numer of blockers" << numberOfBlocks << "\n";
+        std::vector<BlockHeader> blocks;
+    
+        BlockHeader* blockis = reader.readAllBlocks(blocks, numberOfBlocks);
+
+        for (auto i = 0; i < numberOfBlocks; ++i) {
+            auto& b = blockis[i];
+            std::cout << "uncompressed size in the block: " << b.block_seq_num << " is " << b.uncompressed_size << " and the data is: " << b.data << std::endl;
         }
     } catch (const std::exception& e) {
         std::cerr << "❌ DECompression failed: " << e.what() << "\n";
     }
+    std::cout << "does zeb have anything? " <<  "\n";
 }

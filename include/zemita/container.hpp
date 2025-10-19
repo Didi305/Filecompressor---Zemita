@@ -45,7 +45,7 @@ class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
     GlobalHeader readGlobalHeader();
-    std::vector<BlockHeader> readAllBlocks(int numberOfBlocks);
+    BlockHeader* readAllBlocks(std::vector<BlockHeader>& blocks, uint32_t numberOfBlocks);
     ~ContainerReader();
 private:
     std::ifstream in_;

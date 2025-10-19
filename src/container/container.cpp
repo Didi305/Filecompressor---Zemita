@@ -50,19 +50,28 @@ GlobalHeader ContainerReader::readGlobalHeader() {
 
 
 
-std::vector<BlockHeader> ContainerReader::readAllBlocks(int numberOfBlocks){
-    std::cout << "number of blockis: " << numberOfBlocks << "\n";
-    std::vector<BlockHeader> blocks(numberOfBlocks);
-    int offset = 22;
-    while (numberOfBlocks > 0 ){
-        in_.seekg(offset, in_.beg);
+BlockHeader* ContainerReader::readAllBlocks(std::vector<BlockHeader>& blocks, uint32_t numberOfBlocks) {
+    int offset = 22; // after global header
+    std::cout << "readAllBlocks called!\n";
+
+
+    while (numberOfBlocks > 0) {
+        in_.seekg(offset, std::ios::beg);
         BlockHeader bHeader{};
-        in_.read(reinterpret_cast<char*>(&bHeader), sizeof(bHeader));
-        blocks.emplace(blocks.begin(), bHeader);
+        in_.read(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
+        in_.read(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
+        in_.read(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
+        bHeader.data = new char[bHeader.compressed_size];
+        in_.read(bHeader.data, bHeader.compressed_size);
+
+        blocks.push_back(bHeader);
+        std::cout << "PUSHING!! !\n";
+        offset += 12 + bHeader.compressed_size;
         numberOfBlocks--;
-        std::cout << "size of in loop: " << numberOfBlocks << " is " << sizeof(bHeader) << "\n";
-        offset += sizeof(bHeader);
-        std::cout << "offset in loop: " << numberOfBlocks << " is " << offset << "\n" ;
     }
-    return blocks;
+
+    BlockHeader* blockis = blocks.data();
+    std::cout << "readAllBlocks returning!\n";
+    std::cout << "Number of blocks read = " << blocks.size() << "\n";
+    return blockis;
 }
