@@ -1,21 +1,25 @@
+
+
 #include <cstdint>
 #include <string>
 #include <fstream>
 #include <filesystem>
-
+#pragma pack(push, 1)    
 struct GlobalHeader{
     char magicBytes[4] = {'Z', 'E', 'M', '1'};
     uint32_t original_size;
     uint32_t checksum_id = 0;
-    uint32_t block_size = 64 * 1024;
+    uint32_t block_size = 2 * 1024;
     uint16_t version = 1;
-    int codec_id = 0;
+    int codec_id = 1;
 };
+#pragma pack(pop)
 
 struct BlockHeader{
+    uint32_t block_seq_num = 0;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
-    uint32_t block_seq_num = 0;
+    char* data;
 };
 
 inline void write_u32_le(std::ostream& out, uint32_t value){
@@ -31,7 +35,7 @@ class ContainerWriter {
 public:
     explicit ContainerWriter(const std::string& output_path);
     void writeGlobalHeader(GlobalHeader& gheader);
-    void writeBlock(BlockHeader& bheader, std::vector<char>& data);
+    void writeBlock(BlockHeader& bheader);
     ~ContainerWriter();
 private:
     std::ofstream out_;
@@ -41,7 +45,7 @@ class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
     GlobalHeader readGlobalHeader();
-    BlockHeader readBlock();
+    std::vector<BlockHeader> readAllBlocks(int numberOfBlocks);
     ~ContainerReader();
 private:
     std::ifstream in_;

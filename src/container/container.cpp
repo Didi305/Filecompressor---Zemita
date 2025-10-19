@@ -14,17 +14,16 @@ ContainerWriter::~ContainerWriter() {
 }
 
 void ContainerWriter::writeGlobalHeader(GlobalHeader& gHeader){
-    out_.write(gHeader.magicBytes, 4);
-    out_.write(reinterpret_cast<char*>(&gHeader.original_size), sizeof(gHeader.original_size));
-    out_.write(reinterpret_cast<char*>(&gHeader.checksum_id), sizeof(gHeader.checksum_id));
-    out_.write(reinterpret_cast<char*>(&gHeader.block_size), sizeof(gHeader.block_size));
-    out_.write(reinterpret_cast<char*>(&gHeader.version), sizeof(gHeader.version));
-    out_.write(reinterpret_cast<char*>(&gHeader.original_size), sizeof(gHeader.original_size));
+    
+    out_.write(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
+
 }
 
-void ContainerWriter::writeBlock(BlockHeader& bHeader, std::vector<char>& data){
-    out_.write(reinterpret_cast<char*>(&bHeader), sizeof(bHeader));
-    out_.write(data.data(), data.size());
+void ContainerWriter::writeBlock(BlockHeader& bHeader){
+    out_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
+    out_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
+    out_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
+    out_.write(bHeader.data, bHeader.compressed_size);
 }
 
 
@@ -36,17 +35,34 @@ ContainerReader::~ContainerReader() {
     if (in_.is_open()) in_.close();
 }
 
-GlobalHeader ContainerReader::readGlobalHeader(){
+GlobalHeader ContainerReader::readGlobalHeader() {
+    std::cout << "[readGlobalHeader START]\n" << std::flush;
+
+    if (!in_) {
+        std::cerr << "❌ File stream invalid\n";
+    }
+
     GlobalHeader gHeader{};
-    char magicBytez[4];
-    in_.read(magicBytez, 4);
-    if (gHeader.magicBytes == magicBytez) std::cout << "typ shit";
+    std::cout << "sizeof(GlobalHeader) = " << sizeof(GlobalHeader) << '\n';
+    in_.read(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
     return gHeader;
 }
 
 
 
-BlockHeader ContainerReader::readBlock(){
-    BlockHeader bHeader;
-    return bHeader;
+std::vector<BlockHeader> ContainerReader::readAllBlocks(int numberOfBlocks){
+    std::cout << "number of blockis: " << numberOfBlocks << "\n";
+    std::vector<BlockHeader> blocks(numberOfBlocks);
+    int offset = 22;
+    while (numberOfBlocks > 0 ){
+        in_.seekg(offset, in_.beg);
+        BlockHeader bHeader{};
+        in_.read(reinterpret_cast<char*>(&bHeader), sizeof(bHeader));
+        blocks.emplace(blocks.begin(), bHeader);
+        numberOfBlocks--;
+        std::cout << "size of in loop: " << numberOfBlocks << " is " << sizeof(bHeader) << "\n";
+        offset += sizeof(bHeader);
+        std::cout << "offset in loop: " << numberOfBlocks << " is " << offset << "\n" ;
+    }
+    return blocks;
 }
