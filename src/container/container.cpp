@@ -1,29 +1,33 @@
 #include <cstdint>
+#include <print>
 #include <string>
 #include <fstream>
-#include <filesystem>
-#include <iostream>
-#include "zemita/container.hpp"
 
-ContainerWriter::ContainerWriter(const std::string& out_path) : out_(out_path, std::ios::binary){
-    if (!out_) throw std::runtime_error("Failed to open output file: " + out_path);
+#include <iostream>
+#include <zemita/container.hpp>
+
+ContainerWriter::ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader) 
+    : out_(filePath, std::ios::binary)
+    , writer_(&out_, 4*1024)
+    {
+    if (!out_) throw std::runtime_error("Failed to open output file: " + filePath);
+    std::println("tried adding header");
+    writer_.write(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
 }
 
 ContainerWriter::~ContainerWriter() {
     if (out_.is_open()) out_.close();
 }
 
-void ContainerWriter::writeGlobalHeader(GlobalHeader& gHeader){
-    
-    out_.write(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
-
+void ContainerWriter::finalize(){
+    writer_.flush();
 }
 
 void ContainerWriter::writeBlock(BlockHeader& bHeader){
-    out_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
-    out_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
-    out_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
-    out_.write(bHeader.data, bHeader.compressed_size);
+    writer_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
+    writer_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
+    writer_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
+    writer_.write(bHeader.data, bHeader.compressed_size);
 }
 
 

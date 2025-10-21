@@ -1,5 +1,5 @@
 #include <zemita/zemita.hpp>
-
+#include <print>
 #include <filesystem>
 #include <iostream>
 #include "zemita/utils.hpp"
@@ -12,16 +12,15 @@ void ZemitaApp::compress(const std::string& input_path) {
     }
     fs::path in_path(input_path);
     // Prepare output path
-    std::string output_path = in_path.stem().string() + ".zem";
+    std::string filePath = in_path.stem().string() + ".zem";
 
     // Initialize gHeader
     GlobalHeader gHeader;
     gHeader.original_size = fs::file_size(input_path);
-    ContainerWriter writer(output_path);
+    ContainerWriter writer(filePath, gHeader);
     try {
         // Create writer and write gHeader
-        writer.writeGlobalHeader(gHeader);
-        std::cout << "✅ Wrote .zem gHeader for file: " << output_path << "\n";
+        std::cout << "✅ Wrote .zem gHeader for file: " << filePath << "\n";
     } catch (const std::exception& e) {
         std::cerr << "❌ Compression failed: " << e.what() << "\n";
     }
@@ -43,6 +42,7 @@ void ZemitaApp::compress(const std::string& input_path) {
         writer.writeBlock(bHeader);
         i++;
     }
+    writer.finalize();
 }   
 
 void ZemitaApp::decompress(const std::string& input_path) {
@@ -76,5 +76,5 @@ void ZemitaApp::decompress(const std::string& input_path) {
     } catch (const std::exception& e) {
         std::cerr << "❌ DECompression failed: " << e.what() << "\n";
     }
-    std::cout << "does zeb have anything? " <<  "\n";
+    std::print("typ shit");
 }

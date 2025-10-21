@@ -4,6 +4,12 @@
 #include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <cstdint>
+#include <string>
+#include <fstream>
+#include <filesystem>
+#include <iostream>
+#include <print>
 namespace Utils {
 
     static char* getDataBlock(std::ifstream& in, uint32_t diff, uint32_t next, std::vector<char>& buffer){

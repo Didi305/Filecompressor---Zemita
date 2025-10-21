@@ -1,0 +1,38 @@
+[
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita.dir\\zemita.cpp.obj /FdCMakeFiles\\zemita.dir\\zemita.pdb /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\zemita.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/zemita.cpp",
+  "output": "src/CMakeFiles/zemita.dir/zemita.cpp.obj"
+},
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita.dir\\container\\container.cpp.obj /FdCMakeFiles\\zemita.dir\\zemita.pdb /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\container\\container.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/container/container.cpp",
+  "output": "src/CMakeFiles/zemita.dir/container/container.cpp.obj"
+},
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita.dir\\container\\index.cpp.obj /FdCMakeFiles\\zemita.dir\\zemita.pdb /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\container\\index.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/container/index.cpp",
+  "output": "src/CMakeFiles/zemita.dir/container/index.cpp.obj"
+},
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita.dir\\io\\buffered_reader.cpp.obj /FdCMakeFiles\\zemita.dir\\zemita.pdb /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\io\\buffered_reader.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/io/buffered_reader.cpp",
+  "output": "src/CMakeFiles/zemita.dir/io/buffered_reader.cpp.obj"
+},
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita.dir\\io\\buffered_writer.cpp.obj /FdCMakeFiles\\zemita.dir\\zemita.pdb /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\io\\buffered_writer.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/io/buffered_writer.cpp",
+  "output": "src/CMakeFiles/zemita.dir/io/buffered_writer.cpp.obj"
+},
+{
+  "directory": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/build_json/src",
+  "command": "C:\\PROGRA~1\\MICROS~4\\2022\\COMMUN~1\\VC\\Tools\\MSVC\\1443~1.348\\bin\\Hostx86\\x86\\cl.exe  /nologo /TP  -IC:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\include /DWIN32 /D_WINDOWS /EHsc /Ob0 /Od -std:c++latest -MDd -RTC1 -Zi /FoCMakeFiles\\zemita_cli.dir\\CLI\\zemita_main.cpp.obj /FdCMakeFiles\\zemita_cli.dir\\ /FS -c C:\\Users\\giler\\Desktop\\C++\\Filecompressor---Zemita\\src\\CLI\\zemita_main.cpp",
+  "file": "C:/Users/giler/Desktop/C++/Filecompressor---Zemita/src/CLI/zemita_main.cpp",
+  "output": "src/CMakeFiles/zemita_cli.dir/CLI/zemita_main.cpp.obj"
+}
+]

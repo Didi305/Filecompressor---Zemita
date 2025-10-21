@@ -1,9 +1,10 @@
 
-
 #include <cstdint>
 #include <string>
 #include <fstream>
 #include <filesystem>
+#include "buffered_writer.hpp"
+#include <vector>
 #pragma pack(push, 1)    
 struct GlobalHeader{
     char magicBytes[4] = {'Z', 'E', 'M', '1'};
@@ -33,12 +34,13 @@ inline void write_u32_le(std::ostream& out, uint32_t value){
 
 class ContainerWriter {
 public:
-    explicit ContainerWriter(const std::string& output_path);
-    void writeGlobalHeader(GlobalHeader& gheader);
+    explicit ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader);
     void writeBlock(BlockHeader& bheader);
+    void finalize();
     ~ContainerWriter();
 private:
     std::ofstream out_;
+    BufferedWriter writer_;
 };
 
 class ContainerReader {
