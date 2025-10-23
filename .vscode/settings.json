@@ -64,8 +64,16 @@
     "C_Cpp.errorSquiggles": "disabled",
     "C_Cpp.intelliSenseEngine": "disabled",
     "cmake.configureArgs": [
-    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
     ],
     "cmake.buildDirectory": "${workspaceFolder}/build",
-    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json"
+    "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 700,
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+    "--background-index",
+    "--clang-tidy",
+    "--compile-commands-dir=${workspaceFolder}"
+    ]
 }

@@ -7,8 +7,8 @@
 #include <zemita/container.hpp>
 
 ContainerWriter::ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader) 
-    : out_(filePath, std::ios::binary)
-    , writer_(&out_, 4*1024)
+    : out_(filePath, std::ios::binary | std::ios::trunc)
+    , writer_(&out_, 2*1024)
     {
     if (!out_) throw std::runtime_error("Failed to open output file: " + filePath);
     std::println("tried adding header");
@@ -23,54 +23,40 @@ void ContainerWriter::finalize(){
     writer_.flush();
 }
 
-void ContainerWriter::writeBlock(BlockHeader& bHeader){
+void ContainerWriter::writeBlock(BlockHeader& bHeader, char* data){
     writer_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
     writer_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
     writer_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
-    writer_.write(bHeader.data, bHeader.compressed_size);
+    writer_.write(data, bHeader.compressed_size);
 }
 
 
-ContainerReader::ContainerReader(const std::string& input_path) : in_(std::ifstream(input_path)) {
-    if (!in_) throw std::runtime_error("no input path");
+ContainerReader::ContainerReader(const std::string& input_path) 
+    : reader_(input_path, 4*1024) 
+{
+    GlobalHeader gHeader{};
+    std::cout << "sizeof(GlobalHeader) = " << sizeof(GlobalHeader) << '\n';
+    in_.read(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
 }
 
 ContainerReader::~ContainerReader() {
     if (in_.is_open()) in_.close();
 }
 
-GlobalHeader ContainerReader::readGlobalHeader() {
-    std::cout << "[readGlobalHeader START]\n" << std::flush;
-
-    if (!in_) {
-        std::cerr << "❌ File stream invalid\n";
-    }
-
-    GlobalHeader gHeader{};
-    std::cout << "sizeof(GlobalHeader) = " << sizeof(GlobalHeader) << '\n';
-    in_.read(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
-    return gHeader;
-}
 
 
-
-BlockHeader* ContainerReader::readAllBlocks(std::vector<BlockHeader>& blocks, uint32_t numberOfBlocks) {
-    int offset = 22; // after global header
+BlockHeader* ContainerReader::readAllBlocks() { // after global header
     std::cout << "readAllBlocks called!\n";
+    uint32_t numberOfBlocks = blocks.size();
+    int i = 0;
+    while (i < numberOfBlocks) {
+        reader_.read(reinterpret_cast<char*>(&blocks[i].block_seq_num), sizeof(uint32_t));
+        std::print("seq num: ", blocks[i].block_seq_num);
+        reader_.read(reinterpret_cast<char*>(&blocks[i].uncompressed_size), sizeof(uint32_t));
+        reader_.read(reinterpret_cast<char*>(&blocks[i].compressed_size), sizeof(uint32_t));
+        
 
-
-    while (numberOfBlocks > 0) {
-        in_.seekg(offset, std::ios::beg);
-        BlockHeader bHeader{};
-        in_.read(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
-        in_.read(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
-        in_.read(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
-        bHeader.data = new char[bHeader.compressed_size];
-        in_.read(bHeader.data, bHeader.compressed_size);
-
-        blocks.push_back(bHeader);
         std::cout << "PUSHING!! !\n";
-        offset += 12 + bHeader.compressed_size;
         numberOfBlocks--;
     }
 

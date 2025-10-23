@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include "buffered_writer.hpp"
+#include "buffered_reader.hpp"
 #include <vector>
 #pragma pack(push, 1)    
 struct GlobalHeader{
@@ -20,7 +21,6 @@ struct BlockHeader{
     uint32_t block_seq_num = 0;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
-    char* data;
 };
 
 inline void write_u32_le(std::ostream& out, uint32_t value){
@@ -35,7 +35,7 @@ inline void write_u32_le(std::ostream& out, uint32_t value){
 class ContainerWriter {
 public:
     explicit ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader);
-    void writeBlock(BlockHeader& bheader);
+    void writeBlock(BlockHeader& bheader, char* data);
     void finalize();
     ~ContainerWriter();
 private:
@@ -46,10 +46,13 @@ private:
 class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
-    GlobalHeader readGlobalHeader();
-    BlockHeader* readAllBlocks(std::vector<BlockHeader>& blocks, uint32_t numberOfBlocks);
+    BlockHeader* readAllBlocks();
     ~ContainerReader();
 private:
     std::ifstream in_;
+    GlobalHeader gHeader_{};
+    uint32_t numberOfBlocks;
+    std::vector<BlockHeader> blocks;
+    BufferedReader reader_;
 };
 
