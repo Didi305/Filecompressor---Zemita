@@ -6,6 +6,7 @@
 #include "buffered_writer.hpp"
 #include "buffered_reader.hpp"
 #include <vector>
+
 #pragma pack(push, 1)    
 struct GlobalHeader{
     char magicBytes[4] = {'Z', 'E', 'M', '1'};
@@ -21,6 +22,9 @@ struct BlockHeader{
     uint32_t block_seq_num = 0;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
+    bool operator<(const BlockHeader& other) const {
+        return block_seq_num < other.block_seq_num;
+    }
 };
 
 inline void write_u32_le(std::ostream& out, uint32_t value){
@@ -34,7 +38,7 @@ inline void write_u32_le(std::ostream& out, uint32_t value){
 
 class ContainerWriter {
 public:
-    explicit ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader);
+    explicit ContainerWriter(std::string& filePath, const GlobalHeader& gHeader);
     void writeBlock(BlockHeader& bheader, char* data);
     void finalize();
     ~ContainerWriter();
@@ -46,7 +50,7 @@ private:
 class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
-    BlockHeader* readAllBlocks();
+    std::map<BlockHeader, char*> readAllBlocks();
     ~ContainerReader();
 private:
     std::ifstream in_;

@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <iostream>
 #include <print>
+#include <map>
 namespace Utils {
 
     static char* getDataBlock(std::ifstream& in, uint32_t diff, uint32_t next, std::vector<char>& buffer){

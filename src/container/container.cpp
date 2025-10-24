@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cstdint>
 #include <print>
 #include <string>
@@ -6,11 +7,10 @@
 #include <iostream>
 #include <zemita/container.hpp>
 
-ContainerWriter::ContainerWriter(const std::string& filePath, const GlobalHeader& gHeader) 
-    : out_(filePath, std::ios::binary | std::ios::trunc)
-    , writer_(&out_, 2*1024)
+
+ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) 
+    : writer_(filePath, 2*1024)
     {
-    if (!out_) throw std::runtime_error("Failed to open output file: " + filePath);
     std::println("tried adding header");
     writer_.write(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
 }
@@ -30,13 +30,18 @@ void ContainerWriter::writeBlock(BlockHeader& bHeader, char* data){
     writer_.write(data, bHeader.compressed_size);
 }
 
-
+#include <filesystem>
 ContainerReader::ContainerReader(const std::string& input_path) 
     : reader_(input_path, 4*1024) 
 {
     GlobalHeader gHeader{};
-    std::cout << "sizeof(GlobalHeader) = " << sizeof(GlobalHeader) << '\n';
-    in_.read(reinterpret_cast<char*>(&gHeader), sizeof(gHeader));
+    std::println("size directly  from file: {}", std::filesystem::file_size(input_path));
+    auto dataRead = reader_.read(reinterpret_cast<char*>(&gHeader.magicBytes), sizeof(gHeader));
+    std::println("data: {}", dataRead);
+    std::println("size of the file from the global header: {}", gHeader.original_size);
+    auto numberOfBlocks = std::ceil(double (gHeader.original_size) / gHeader.block_size);
+    blocks.resize(numberOfBlocks);
+    std::println("size of t: {}", blocks.size());
 }
 
 ContainerReader::~ContainerReader() {
@@ -45,23 +50,23 @@ ContainerReader::~ContainerReader() {
 
 
 
-BlockHeader* ContainerReader::readAllBlocks() { // after global header
+std::map<BlockHeader, char*> ContainerReader::readAllBlocks() { // after global header
     std::cout << "readAllBlocks called!\n";
+    std::map<BlockHeader, char*> blockMap;
     uint32_t numberOfBlocks = blocks.size();
+    std::print("seq0num: ", blocks[0].block_seq_num);
     int i = 0;
     while (i < numberOfBlocks) {
-        reader_.read(reinterpret_cast<char*>(&blocks[i].block_seq_num), sizeof(uint32_t));
+        reader_.read(reinterpret_cast<char*>(&blocks[i]), sizeof(BlockHeader));
         std::print("seq num: ", blocks[i].block_seq_num);
-        reader_.read(reinterpret_cast<char*>(&blocks[i].uncompressed_size), sizeof(uint32_t));
-        reader_.read(reinterpret_cast<char*>(&blocks[i].compressed_size), sizeof(uint32_t));
-        
-
-        std::cout << "PUSHING!! !\n";
-        numberOfBlocks--;
+        char* blockData = new char[blocks[i].compressed_size];
+        reader_.read(blockData, blocks[i].compressed_size);
+        blockMap[blocks[i]] = blockData;
+        std::println("Data read from block {} is: {}", blocks[i].block_seq_num, blockData);
+        i++;
     }
 
-    BlockHeader* blockis = blocks.data();
     std::cout << "readAllBlocks returning!\n";
     std::cout << "Number of blocks read = " << blocks.size() << "\n";
-    return blockis;
+    return blockMap;
 }

@@ -52,21 +52,22 @@ void ZemitaApp::compress(const std::string& input_path) {
 
 void ZemitaApp::decompress(const std::string& input_path) {
     namespace fs = std::filesystem;
-
+    std::map <BlockHeader, char*> blockMap;
     if (!fs::exists(input_path)) {
         std::cerr << "❌ File not found: " << input_path << "\n";
         return;
     }
-
-
+    fs::path in_path(input_path);
+    std::string filePath = in_path.stem().string() + "DE.txt";
+    BufferedWriter writer(filePath, 4*1024);
     ContainerReader reader(input_path);
-    try {
-        
-        
 
-        
-    } catch (const std::exception& e) {
-        std::cerr << "❌ DECompression failed: " << e.what() << "\n";
+    blockMap = reader.readAllBlocks();
+
+    for (auto it = blockMap.begin(); it != blockMap.end(); ++it){
+        std::println("writing data from block: {} that has the following data: {}", it->first.block_seq_num, it->second);
+        writer.write(it->second, it->first.compressed_size);
     }
+    writer.flush();
     std::print("typ shit");
 }

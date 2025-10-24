@@ -7,12 +7,6 @@ public:
     bool eof() const {
         return in_.eof() && readPos_ >= bufferFilled_;
     }
-private:
-    std::ifstream in_;
-    std::vector<char> buffer_;
-    uint32_t bufferSize_;
-    uint32_t bufferFilled_;
-    uint32_t readPos_;
 
     void refillBuffer() {
     if (in_.eof() || in_.fail())
@@ -25,5 +19,12 @@ private:
 
     std::println("refillBuffer(): gcount={}, eof={}, fail={}",
         bufferFilled_, in_.eof(), in_.fail());
-}
+    }
+private:
+    std::ifstream in_;
+    std::vector<char> buffer_;
+    uint32_t bufferSize_;
+    uint32_t bufferFilled_;
+    uint32_t readPos_;
+
 };   

@@ -1,7 +1,7 @@
 #include "zemita/buffered_writer.hpp"
 
-BufferedWriter::BufferedWriter(std::ofstream* out, const uint32_t bufferSize)
-    : out_(out)
+BufferedWriter::BufferedWriter(const std::string& filePath, const uint32_t bufferSize)
+    : out_(filePath, std::ios::binary)
     , bufferSize_(bufferSize)
     , buffer_(std::vector<char>(bufferSize))
     {
@@ -22,8 +22,8 @@ void BufferedWriter::write(const char* toBeWrittenData, size_t dataSize){
             std::println("buffer fill = {} bytes", writePos_);
             
             if(writePos_ == buffer_.size()){
-                out_->write(buffer_.data(), writePos_); 
-                out_->flush();
+                out_.write(buffer_.data(), writePos_); 
+                out_.flush();
                 writePos_ = 0;
             }
             std::println("buffer fill = {} bytes", buffer_.data());
@@ -33,7 +33,7 @@ void BufferedWriter::write(const char* toBeWrittenData, size_t dataSize){
 }
 
 void BufferedWriter::flush(){
-    out_->write(buffer_.data(), writePos_);
-    out_->flush();
+    out_.write(buffer_.data(), writePos_);
+    out_.flush();
     writePos_ = 0;
 }

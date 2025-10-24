@@ -18,12 +18,16 @@ uint32_t BufferedReader::read(char* dataReadTo, size_t dataSize){
     std::println("BufferedReader::read() start — bufferFilled_={}, readPos_={}, eof={}", 
               bufferFilled_, readPos_, in_.eof());
     std::println("buffer size when reading: {}", dataSize);
+    std::println("first element in the buffer: {}", buffer_[23]);
     uint32_t totalRead = 0;
     while (dataSize > 0){
         if(readPos_ >= bufferFilled_){
             refillBuffer();
             std::println("bufferFilled: {}", bufferFilled_);
-            if (bufferFilled_ == 0) std::println("reach the end of file"); break;
+            if (bufferFilled_ == 0) {
+                std::println("reach the end of file"); 
+                break;
+            }
         }
         
         size_t availableSpaceForData = bufferFilled_ - readPos_;
@@ -32,7 +36,8 @@ uint32_t BufferedReader::read(char* dataReadTo, size_t dataSize){
         readPos_ += toCopy;
         dataSize -= toCopy;
         totalRead += toCopy;
-            
+        std::println("read loop — bufferFilled_={}, readPos_={}, dataSize={} eof={}", 
+              bufferFilled_, readPos_, dataSize, in_.eof());
         }
         return totalRead;
     }
