@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
     try {
         ZemitaApp app;
-        app.decompress(filePath);
+        app.compress(filePath);
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << '\n';
         return 1;

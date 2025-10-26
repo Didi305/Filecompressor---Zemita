@@ -10,6 +10,7 @@
 #pragma pack(push, 1)    
 struct GlobalHeader{
     char magicBytes[4] = {'Z', 'E', 'M', '1'};
+    char original_extension[8];
     uint32_t original_size;
     uint32_t checksum_id = 0;
     uint32_t block_size = 2 * 1024;

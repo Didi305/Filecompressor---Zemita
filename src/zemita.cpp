@@ -1,3 +1,4 @@
+#include <cstring>
 #include <zemita/zemita.hpp>
 #include <print>
 #include <filesystem>
@@ -18,6 +19,7 @@ void ZemitaApp::compress(const std::string& input_path) {
     // Initialize gHeader
     GlobalHeader gHeader;
     gHeader.original_size = fs::file_size(input_path);
+    std::snprintf(gHeader.original_extension, sizeof(gHeader.original_extension), "%s", in_path.extension().string().erase(0, 1).c_str());
     ContainerWriter writer(filePath, gHeader);
     std::cout << "Opening path: " << std::filesystem::absolute(input_path) << "\n";
     BufferedReader reader(input_path, 6*1024);
