@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <zemita/buffered_reader.hpp>
+#include <io/buffered_reader.hpp>
 
 BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize) 
     : in_(filePath, std::ios::binary)

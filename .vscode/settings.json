@@ -1,79 +1,49 @@
 {
-    "files.associations": {
-        "xstring": "cpp",
-        "atomic": "cpp",
-        "bit": "cpp",
-        "cctype": "cpp",
-        "charconv": "cpp",
-        "clocale": "cpp",
-        "cmath": "cpp",
-        "compare": "cpp",
-        "concepts": "cpp",
-        "cstddef": "cpp",
-        "cstdint": "cpp",
-        "cstdio": "cpp",
-        "cstdlib": "cpp",
-        "cstring": "cpp",
-        "ctime": "cpp",
-        "cwchar": "cpp",
-        "exception": "cpp",
-        "format": "cpp",
-        "initializer_list": "cpp",
-        "ios": "cpp",
-        "iosfwd": "cpp",
-        "iostream": "cpp",
-        "istream": "cpp",
-        "iterator": "cpp",
-        "limits": "cpp",
-        "locale": "cpp",
-        "memory": "cpp",
-        "new": "cpp",
-        "ostream": "cpp",
-        "stdexcept": "cpp",
-        "streambuf": "cpp",
-        "string": "cpp",
-        "system_error": "cpp",
-        "tuple": "cpp",
-        "type_traits": "cpp",
-        "typeinfo": "cpp",
-        "utility": "cpp",
-        "xfacet": "cpp",
-        "xiosbase": "cpp",
-        "xlocale": "cpp",
-        "xlocbuf": "cpp",
-        "xlocinfo": "cpp",
-        "xlocmes": "cpp",
-        "xlocmon": "cpp",
-        "xlocnum": "cpp",
-        "xloctime": "cpp",
-        "xmemory": "cpp",
-        "xtr1common": "cpp",
-        "xutility": "cpp",
-        "algorithm": "cpp",
-        "chrono": "cpp",
-        "filesystem": "cpp",
-        "forward_list": "cpp",
-        "fstream": "cpp",
-        "iomanip": "cpp",
-        "optional": "cpp",
-        "ratio": "cpp",
-        "sstream": "cpp",
-        "vector": "cpp",
-        "print": "cpp"
+    // ==========================
+    // C++: clangd configuration
+    // ==========================
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+        "--background-index",
+        "--clang-tidy",
+        "--completion-style=detailed",
+        "--header-insertion=never",
+        "--compile-commands-dir=${workspaceFolder}"
+    ],
+    // ==========================
+    // C++ Formatting
+    // ==========================
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
     },
-    "C_Cpp.errorSquiggles": "disabled",
-    "C_Cpp.intelliSenseEngine": "disabled",
+    "[c]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "editor.formatOnSave": true,
+    "C_Cpp.formatting": "Disabled",
+    "C_Cpp.clang_format_style": "file",
+    // ==========================
+    // C++ Code Analysis (clang-tidy)
+    // ==========================
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",
+    "C_Cpp.codeAnalysis.clangTidy.useBuildPath": true,
+    // ==========================
+    // CMake setup
+    // ==========================
     "cmake.configureArgs": [
         "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
     ],
     "cmake.buildDirectory": "${workspaceFolder}/build",
     "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+    // ==========================
+    // Editor settings
+    // ==========================
     "files.autoSave": "afterDelay",
-    "files.autoSaveDelay": 700,
-    "clangd.path": "clangd",
-    "clangd.arguments": [
-    "--background-index",
-    "--clang-tidy",
-    "--compile-commands-dir=${workspaceFolder}"
-    ]
+    "files.autoSaveDelay": 500,
+    // ==========================
+    // UI / IntelliSense Enhancements
+    // ==========================
+    "editor.semanticHighlighting.enabled": true,
+    "editor.inlayHints.enabled": "on"
 }

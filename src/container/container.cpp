@@ -5,7 +5,7 @@
 #include <fstream>
 
 #include <iostream>
-#include <zemita/container.hpp>
+#include "container.hpp"
 
 
 ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) 
@@ -34,16 +34,20 @@ void ContainerWriter::writeBlock(BlockHeader& bHeader, char* data){
 ContainerReader::ContainerReader(const std::string& input_path) 
     : reader_(input_path, 4*1024) 
 {
+
+}
+GlobalHeader ContainerReader::readGlobalHeader(const std::string& path){
     GlobalHeader gHeader{};
-    std::println("size directly  from file: {}", std::filesystem::file_size(input_path));
+    std::println("size directly  from file: {}", std::filesystem::file_size(path));
     auto dataRead = reader_.read(reinterpret_cast<char*>(&gHeader.magicBytes), sizeof(gHeader));
     std::println("data: {}", dataRead);
     std::println("size of the file from the global header: {}", gHeader.original_size);
+    std::println("extensssssss: {}", gHeader.original_extension);
     auto numberOfBlocks = std::ceil(double (gHeader.original_size) / gHeader.block_size);
     blocks.resize(numberOfBlocks);
     std::println("size of t: {}", blocks.size());
+    return gHeader;
 }
-
 ContainerReader::~ContainerReader() {
     if (in_.is_open()) in_.close();
 }

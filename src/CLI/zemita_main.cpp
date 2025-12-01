@@ -1,12 +1,19 @@
-#include "zemita/zemita.hpp"
+#include "CLI/zemita_main.hpp"
+
 #include <iostream>
 
-#ifdef _WIN32
-#include <windows.h>
+#include "codecs/lz77.hpp"
+#include "zemita.hpp"
+#include "zemita/utils.hpp"
+
+/*#ifdef _WIN32
 #include <commdlg.h>
+#include <windows.h>
+
 #endif
 
-std::string openFileDialog() {
+std::string openFileDialog()
+{
 #ifdef _WIN32
     char filename[MAX_PATH] = "";
     OPENFILENAMEA ofn = {0};
@@ -16,7 +23,7 @@ std::string openFileDialog() {
     ofn.nMaxFile = MAX_PATH;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
     ofn.lpstrTitle = "Select input file";
-    if (GetOpenFileNameA(&ofn))
+    if (GetOpenCardNameA(&ofn))
         return filename;
     else
         return "";
@@ -26,22 +33,33 @@ std::string openFileDialog() {
     std::getline(std::cin, path);
     return path;
 #endif
-}
+}*/
 
-int main(int argc, char** argv) {
-    std::string filePath = openFileDialog();
-    if (filePath.empty()) {
-        std::cerr << "❌ No file selected.\n";
-        return 1;
-    }
+void test_lz77(const std::string& input)
+{
+    LZ77Codec codec(SEARCH_WINDOW_SIZE, LOOKAHEAD_BUFFER_SIZE);
 
-    try {
-        ZemitaApp app;
-        app.compress(filePath);
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << '\n';
-        return 1;
+    auto compressed = codec.compress(std::span<const char>(input.data(), input.size()));
+    int iterator = 0;
+    for (auto& m : compressed)
+    {
+        std::cout << "\n";
+        std::print("Byte {}: {}", iterator, m.offset);
+        std::print("{}", m.length);
+        std::print("{}", m.next);
+        std::cout << "\n";
+        iterator++;
     }
-    
-    return 0;
+};
+
+int main(int argc, char** argv)
+{
+    std::print("Cpp version: {}", __cplusplus);
+    test_lz77("");             // empty
+    test_lz77("A");            // one char
+    test_lz77("ABCDEFG");      // no repeats
+    test_lz77("AAAAAA");       // repeated
+    test_lz77("ABCABCABC");    // overlapping
+    test_lz77("abracadabra");  // classic
+    test_lz77("hello hello");  // common words
 }

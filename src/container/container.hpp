@@ -3,8 +3,8 @@
 #include <string>
 #include <fstream>
 #include <filesystem>
-#include "buffered_writer.hpp"
-#include "buffered_reader.hpp"
+#include "io/buffered_writer.hpp"
+#include "io/buffered_reader.hpp"
 #include <vector>
 
 #pragma pack(push, 1)    
@@ -51,6 +51,7 @@ private:
 class ContainerReader {
 public:
     explicit ContainerReader(const std::string& input_path);
+    GlobalHeader readGlobalHeader(const std::string& path);
     std::map<BlockHeader, char*> readAllBlocks();
     ~ContainerReader();
 private:

@@ -1,4 +1,4 @@
-#include "zemita/buffered_writer.hpp"
+#include "io/buffered_writer.hpp"
 
 BufferedWriter::BufferedWriter(const std::string& filePath, const uint32_t bufferSize)
     : out_(filePath, std::ios::binary)
