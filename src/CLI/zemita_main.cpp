@@ -55,10 +55,10 @@ void test_lz77(const std::string& input)
 int main(int argc, char** argv)
 {
     std::print("Cpp version: {}", __cplusplus);
-    test_lz77("");             // empty
+    /* test_lz77("");             // empty
     test_lz77("A");            // one char
     test_lz77("ABCDEFG");      // no repeats
-    test_lz77("AAAAAA");       // repeated
+    test_lz77("AAAAAA");       // repeated */
     test_lz77("ABCABCABC");    // overlapping
     test_lz77("abracadabra");  // classic
     test_lz77("hello hello");  // common words

@@ -13,41 +13,61 @@ LZ77Codec::LZ77Codec(int windowSize, int lookAHead) : windowSize_(windowSize), l
 std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
 {
     std::vector<Match> matches;
-    char afterMatchChar;
     std::vector<char> placeholder;
     aheadBuffer.assign(blockData.begin(), blockData.end());
     while (!aheadBuffer.empty())
     {
+        char afterMatchChar = '?';
         int length = 0;
         auto nextChar = aheadBuffer.front();
-        auto nextCharPos = std::find(searchWindow.begin(), searchWindow.end(), nextChar);
-        if (nextCharPos == searchWindow.end() || searchWindow.empty())
+        auto matchIndexes = Utils::findLastMatch(searchWindow, nextChar);
+        if (matchIndexes.empty())
         {
             searchWindow.push_back(nextChar);
             if (searchWindow.size() > windowSize_)
+            {
                 searchWindow.pop_front();
+            }
             aheadBuffer.pop_front();
             Match match = {.offset = 0, .length = 0, .next = nextChar};
             matches.emplace_back(match);
             continue;
         }
-        auto matchStartPos = std::distance(searchWindow.begin(), nextCharPos);
 
-        placeholder.emplace_back(nextChar);
-        aheadBuffer.pop_front();
-        length++;
-        while (!aheadBuffer.empty() && matchStartPos + length < searchWindow.size() &&
-               searchWindow[matchStartPos + length] == aheadBuffer[0])
+        placeholder.push_back(nextChar);
+        int maxLength = 1;
+        long long bestIndex = 0;
+        for (auto index : matchIndexes)
         {
-            nextChar = aheadBuffer.front();
-            nextCharPos = std::find(searchWindow.begin(), searchWindow.end(), nextChar);
-            if (nextCharPos == searchWindow.end())
+            auto aheadBufferCopy = aheadBuffer;
+            aheadBufferCopy.pop_front();
+            int matchLength = 1;
+            while (!aheadBufferCopy.empty() && index + matchLength < searchWindow.size())
             {
-                break;
+                if (!(searchWindow[index + matchLength] == aheadBufferCopy.front()))
+                {
+                    break;
+                }
+                nextChar = aheadBufferCopy.front();
+                placeholder.push_back(nextChar);
+                aheadBufferCopy.pop_front();
+                matchLength++;
             }
-            placeholder.push_back(nextChar);
-            aheadBuffer.pop_front();
-            length++;
+            if (matchLength >= maxLength)
+            {
+                maxLength = matchLength;
+                bestIndex = index;
+            }
+        }
+
+        aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + maxLength);
+
+        while (!aheadBuffer.empty() && Utils::ahBufferContainsMatch(aheadBuffer, placeholder))
+        {
+            auto matchSize = static_cast<int>(placeholder.size());
+
+            aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + matchSize);
+            maxLength += matchSize;
         }
         if (!aheadBuffer.empty())
         {
@@ -55,11 +75,11 @@ std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
             aheadBuffer.pop_front();
         }
         Match match = {
-            .offset = static_cast<int>(searchWindow.size() - matchStartPos), .length = length, .next = afterMatchChar};
+            .offset = static_cast<int>(searchWindow.size() - bestIndex), .length = maxLength, .next = afterMatchChar};
         matches.emplace_back(match);
         if (placeholder.size() + searchWindow.size() > windowSize_)
         {
-            size_t overflow = (searchWindow.size() + placeholder.size()) - windowSize_;
+            auto overflow = static_cast<int>(searchWindow.size() + placeholder.size()) - windowSize_;
             searchWindow.erase(searchWindow.begin(), searchWindow.begin() + overflow);
         }
         searchWindow.insert(searchWindow.end(), placeholder.begin(), placeholder.end());

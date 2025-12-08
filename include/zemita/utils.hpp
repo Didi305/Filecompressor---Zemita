@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <deque>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -62,4 +63,31 @@ static void printIntervalFromContainer(Container (&container)[N], int start, int
     std::copy(container + start, container + end + 1, std::ostream_iterator<Container>(std::cout));
     std::cout << std::endl;
 }
+
+static auto findLastMatch(std::deque<char>& deq, char character)
+{
+    std::vector<long long int> matchIndexes;
+    auto it = deq.begin();
+    while ((it = std::find(it, deq.end(), character)) != deq.end())
+    {
+        auto newIndex = std::distance(deq.begin(), it);
+
+        if (!matchIndexes.empty() && matchIndexes.back() == newIndex - 1)
+        {
+            matchIndexes.pop_back();
+        }
+        matchIndexes.push_back(newIndex);
+        it++;
+    }
+    return matchIndexes;
+}
+
+static auto ahBufferContainsMatch(std::deque<char>& aheadBuffer, std::vector<char>& placeholder)
+{
+    auto size = static_cast<int>(placeholder.size());
+    std::ranges::subrange sub(aheadBuffer.begin(), aheadBuffer.begin() + size);
+    std::vector<char> subVector(sub.begin(), sub.end());
+    return subVector == placeholder;
+}
+
 }  // namespace Utils
