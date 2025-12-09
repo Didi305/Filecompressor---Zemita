@@ -29,7 +29,7 @@ std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
                 searchWindow.pop_front();
             }
             aheadBuffer.pop_front();
-            Match match = {.offset = 0, .length = 0, .next = nextChar};
+            Match match = {.offset = {0, 0}, .length = 0, .next = nextChar};
             matches.emplace_back(match);
             continue;
         }
@@ -59,13 +59,11 @@ std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
                 bestIndex = index;
             }
         }
-
+        auto matchSize = static_cast<int>(placeholder.size());
         aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + maxLength);
 
         while (!aheadBuffer.empty() && Utils::ahBufferContainsMatch(aheadBuffer, placeholder))
         {
-            auto matchSize = static_cast<int>(placeholder.size());
-
             aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + matchSize);
             maxLength += matchSize;
         }
@@ -74,8 +72,9 @@ std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
             afterMatchChar = aheadBuffer.front();
             aheadBuffer.pop_front();
         }
-        Match match = {
-            .offset = static_cast<int>(searchWindow.size() - bestIndex), .length = maxLength, .next = afterMatchChar};
+        Match match = {.offset = {static_cast<int>(searchWindow.size() - bestIndex), matchSize},
+                       .length = maxLength,
+                       .next = afterMatchChar};
         matches.emplace_back(match);
         if (placeholder.size() + searchWindow.size() > windowSize_)
         {
@@ -89,9 +88,36 @@ std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
     return matches;
 }
 
-std::vector<char> LZ77Codec::decompress(std::span<const Match> matcheas)
+std::vector<char> LZ77Codec::decompress(std::span<const Match> matches)
 {
     std::vector<char> out;
-    // your implementation
+    for (const auto& match : matches)
+    {
+        std::println("offset: {}, length: {}, nextChar: {}", match.offset, match.length, match.next);
+        auto off = std::get<0>(match.offset);
+        auto numberOfChar = std::get<1>(match.offset);
+        if (match.length == 0)
+        {
+            out.emplace_back(match.next);
+        }
+        else
+        {
+            int match_repetition = match.length / numberOfChar;
+            auto iterator = out.begin() + out.size() - off;
+            std::vector<char> temp1(iterator, iterator + numberOfChar);
+            std::vector<char> temp2;
+            temp2.reserve(temp1.size() * match_repetition);
+            for (int i = 0; i < match_repetition; i++)
+            {
+                temp2.insert(temp2.end(), temp1.begin(), temp1.end());
+            }
+            out.insert(out.end(), temp2.begin(), temp2.end());
+            if (match.next != '?')
+            {
+                out.emplace_back(match.next);
+            }
+        }
+    }
+    std::println("output: {}", out);
     return out;
 }

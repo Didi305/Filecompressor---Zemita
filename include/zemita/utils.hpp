@@ -19,7 +19,7 @@ const int LOOKAHEAD_BUFFER_SIZE = 258 * 1024;
 
 struct Match
 {
-    int offset;
+    std::tuple<int, int> offset;
     int length;
     char next;
 };
@@ -85,9 +85,17 @@ static auto findLastMatch(std::deque<char>& deq, char character)
 static auto ahBufferContainsMatch(std::deque<char>& aheadBuffer, std::vector<char>& placeholder)
 {
     auto size = static_cast<int>(placeholder.size());
+    if (aheadBuffer.size() < placeholder.size())
+    {
+        return false;
+    }
     std::ranges::subrange sub(aheadBuffer.begin(), aheadBuffer.begin() + size);
     std::vector<char> subVector(sub.begin(), sub.end());
     return subVector == placeholder;
+}
+
+static auto repeat_vector_N(std::vector<char>& vec, int n){
+    
 }
 
 }  // namespace Utils
