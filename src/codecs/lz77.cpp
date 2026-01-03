@@ -1,97 +1,190 @@
 #include "codecs/lz77.hpp"
 
-#include <String>
 #include <algorithm>
-#include <optional>
 #include <vector>
 
-LZ77Codec::LZ77Codec(int windowSize, int lookAHead) : windowSize_(windowSize), lookAHead_(lookAHead)
+LZ77Codec::LZ77Codec(int windowSize, uint16_t lookAHead)
+    : capacity_(windowSize + lookAHead), masterBuffer(windowSize + lookAHead)
 {
-    std::println("LZ77 Codec created with size: {} and {}", windowSize, lookAHead);
 }
 
-std::vector<Match> LZ77Codec::compress(std::span<const char> blockData)
+auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
 {
+    auto LASIZE = masterBuffer.lookaheadSize();
+    auto availableDataSize =
+        std::min(LOOKAHEAD_BUFFER_SIZE, static_cast<int>(blockData.size())) - masterBuffer.lookaheadSize();
+    int blockDataOffset = 0;
+    int zamel = 0;
     std::vector<Match> matches;
-    std::vector<char> placeholder;
-    aheadBuffer.assign(blockData.begin(), blockData.end());
-    while (!aheadBuffer.empty())
+    if (blockData.empty())
     {
-        char afterMatchChar = '?';
+        return matches;
+    };
+    std::vector<char>& ringBuffer = masterBuffer.getBuffer();
+    std::copy(blockData.begin(), blockData.begin() + availableDataSize,
+              ringBuffer.begin() + masterBuffer.getAheadFrontIndex());
+    masterBuffer.setAheadEnd(masterBuffer.getAheadEndIndex() + availableDataSize);
+    blockDataOffset += availableDataSize;
+    int nextThreeBytesHashed;
+    while (!masterBuffer.lookAheadEmpty())
+    {
+        auto matchesSize = matches.size();
+        auto lookahedSize = masterBuffer.lookaheadSize();
+        auto windowSize = masterBuffer.windowSize();
         int length = 0;
-        auto nextChar = aheadBuffer.front();
-        auto matchIndexes = Utils::findLastMatch(searchWindow, nextChar);
-        if (matchIndexes.empty())
-        {
-            searchWindow.push_back(nextChar);
-            if (searchWindow.size() > windowSize_)
-            {
-                searchWindow.pop_front();
-            }
-            aheadBuffer.pop_front();
-            Match match = {.offset = {0, 0}, .length = 0, .next = nextChar};
-            matches.emplace_back(match);
-            continue;
-        }
 
-        placeholder.push_back(nextChar);
-        int maxLength = 1;
-        long long bestIndex = 0;
-        for (auto index : matchIndexes)
+        if (!((masterBuffer.lookaheadSize() >= 3)))
         {
-            auto aheadBufferCopy = aheadBuffer;
-            aheadBufferCopy.pop_front();
-            int matchLength = 1;
-            while (!aheadBufferCopy.empty() && index + matchLength < searchWindow.size())
+            matches.push_back(
+                {.length = 0, .offset = static_cast<uint16_t>(ringBuffer[masterBuffer.getAheadFrontIndex()])});
+            masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
+            masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
+            masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
+            length++;
+        }
+        else if (!match_map.contains(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex())))
+        {
+            matches.push_back(
+                {.length = 0, .offset = static_cast<uint16_t>(ringBuffer[masterBuffer.getAheadFrontIndex()])});
+            match_map.emplace(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex()),
+                              RingBuffer<int>(MAX_NUMBER_MATCH_OPTIONS, {masterBuffer.getAheadFrontIndex()}));
+            masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
+            masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
+            masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
+            length++;
+        }
+        else
+        {
+            auto matchIndexes =
+                match_map.at(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex())).getBuffer();
+            auto hash1 = LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex());
+
+            int maxLength = 3;
+            int bestIndex = 0;
+            auto matchStartIndex = masterBuffer.getWindowEndIndex();
+            for (auto index : matchIndexes)
             {
-                if (!(searchWindow[index + matchLength] == aheadBufferCopy.front()))
+                int matchLength = 3;
+                if (!masterBuffer.isInWindow(index))
+                    continue;  // quick check first
+                auto lookAheadFrontIndex = masterBuffer.getAheadFrontIndex();
+                auto lookAheadEndIndex = masterBuffer.getAheadEndIndex();
+                auto windowEndIndex = masterBuffer.getWindowEndIndex();
+                auto windowFrontIndex = masterBuffer.getWindowFrontIndex();
+
+                lookAheadFrontIndex = (lookAheadFrontIndex + 3) % capacity_;
+                while (lookAheadFrontIndex != lookAheadEndIndex)
                 {
-                    break;
+                    auto upcomingChar = ringBuffer[lookAheadFrontIndex];
+                    if (!(ringBuffer[(index + matchLength) % capacity_] == upcomingChar))
+                    {
+                        break;
+                    }
+                    lookAheadFrontIndex = (lookAheadFrontIndex + 1) % capacity_;
+                    matchLength++;
+                    windowEndIndex = lookAheadFrontIndex;
                 }
-                nextChar = aheadBufferCopy.front();
-                placeholder.push_back(nextChar);
-                aheadBufferCopy.pop_front();
-                matchLength++;
+                if (matchLength == maxLength)
+                {
+                    bestIndex = index;
+                }
+                else if (matchLength > maxLength)
+                {
+                    maxLength = matchLength;
+                    bestIndex = index;
+                }
             }
-            if (matchLength >= maxLength)
+            for (int i{0}; i < maxLength; i++)
             {
-                maxLength = matchLength;
-                bestIndex = index;
+                int pos = (matchStartIndex + i) % capacity_;
+                auto hash = LZ77::hashNextThreeBytes(masterBuffer, pos);
+
+                if (match_map.contains(hash))
+                {
+                    match_map.at(hash).pushIndex(pos);
+                }
+                else
+                {
+                    match_map.emplace(hash, RingBuffer<int>(MAX_NUMBER_MATCH_OPTIONS, {pos}));
+                }
             }
+            masterBuffer.refillLookahead(blockDataOffset, blockData, maxLength);
+            masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + maxLength);
+            masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
+            auto matchLength = maxLength;
+            auto matchable = true;
+            while (!masterBuffer.lookAheadEmpty() && matchable)
+            {
+                auto subWindow = masterBuffer.getWindowRange(bestIndex, matchLength);
+                auto subAhead = masterBuffer.getAheadRange(blockData, masterBuffer.getAheadFrontIndex(),
+                                                           blockDataOffset, matchLength);
+                if (subWindow == subAhead)
+                {
+                    maxLength += matchLength;
+                    masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + matchLength);
+                    masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
+                    masterBuffer.refillLookahead(blockDataOffset, blockData, matchLength);
+                }
+                else
+                {
+                    for (int i{}; i < masterBuffer.lookaheadSize(); i++)
+                    {
+                        if (subWindow[i] == subAhead[i])
+                        {
+                            masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
+                            masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
+                            masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
+                            matchLength++;
+                        }
+                        else
+                        {
+                            matchable = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            int offset = matchStartIndex - bestIndex;
+            if (offset < 0)
+                offset += capacity_;
+            Match match = {.length = static_cast<uint16_t>(maxLength), .offset = static_cast<uint16_t>(offset)};
+            matches.emplace_back(match);
         }
-        auto matchSize = static_cast<int>(placeholder.size());
-        aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + maxLength);
-
-        while (!aheadBuffer.empty() && Utils::ahBufferContainsMatch(aheadBuffer, placeholder))
-        {
-            aheadBuffer.erase(aheadBuffer.begin(), aheadBuffer.begin() + matchSize);
-            maxLength += matchSize;
-        }
-        if (!aheadBuffer.empty())
-        {
-            afterMatchChar = aheadBuffer.front();
-            aheadBuffer.pop_front();
-        }
-        Match match = {.offset = {static_cast<int>(searchWindow.size() - bestIndex), matchSize},
-                       .length = maxLength,
-                       .next = afterMatchChar};
-        matches.emplace_back(match);
-        if (placeholder.size() + searchWindow.size() > windowSize_)
-        {
-            auto overflow = static_cast<int>(searchWindow.size() + placeholder.size()) - windowSize_;
-            searchWindow.erase(searchWindow.begin(), searchWindow.begin() + overflow);
-        }
-        searchWindow.insert(searchWindow.end(), placeholder.begin(), placeholder.end());
-        searchWindow.push_back(afterMatchChar);
-        placeholder.clear();
+        zamel++;
     }
+    /* int totalLength = 0;
+    int matchCount = 0;
+    int maxFound = 0;
+    int short_matches = 0;   // length 3-5
+    int medium_matches = 0;  // length 6-20
+    int long_matches = 0;    // length 21+
+    for (auto& m : matches)
+    {
+        if (m.length > 0 && m.length <= 5)
+            short_matches++;
+        else if (m.length <= 20)
+            medium_matches++;
+        else if (m.length > 20)
+            long_matches++;
+        if (m.length > 0)
+        {
+            totalLength += m.length;
+            matchCount++;
+        }
+        if (m.length > maxFound)
+            maxFound = m.length;
+    }
+    std::println("Avg match length: {}", matchCount ? totalLength / matchCount : 0);
+    std::println("Total matches: {}, Total literals: {}", matchCount, matches.size() - matchCount);
+    std::println("Longest match: {}", maxFound);
+    std::println("Short: {}, Medium: {}, Long: {}", short_matches, medium_matches, long_matches); */
     return matches;
-}
+};
 
-std::vector<char> LZ77Codec::decompress(std::span<const Match> matches)
+auto LZ77Codec::decompress(std::span<const Match> matches) -> std::vector<char>
 {
     std::vector<char> out;
-    for (const auto& match : matches)
+    /* for (const auto& match : matches)
     {
         std::println("offset: {}, length: {}, nextChar: {}", match.offset, match.length, match.next);
         auto off = std::get<0>(match.offset);
@@ -118,6 +211,6 @@ std::vector<char> LZ77Codec::decompress(std::span<const Match> matches)
             }
         }
     }
-    std::println("output: {}", out);
+    std::println("output: {}", out); */
     return out;
 }

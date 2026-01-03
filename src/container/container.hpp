@@ -1,64 +1,75 @@
-
 #include <cstdint>
-#include <string>
 #include <fstream>
-#include <filesystem>
-#include "io/buffered_writer.hpp"
-#include "io/buffered_reader.hpp"
+#include <map>
+#include <string>
 #include <vector>
+#include <zemita/utils.hpp>
 
-#pragma pack(push, 1)    
-struct GlobalHeader{
-    char magicBytes[4] = {'Z', 'E', 'M', '1'};
-    char original_extension[8];
+#include "io/buffered_reader.hpp"
+#include "io/buffered_writer.hpp"
+
+const int MAGIC_BYTES_SIZE = 4;
+const int EXTENSION_BYTES_SIZE = 5;
+
+#pragma pack(push, 1)
+
+struct GlobalHeader
+{
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    char magicBytes[MAGIC_BYTES_SIZE] = {'Z', 'E', 'M', '1'};
+    // NOLINTNEXTLINE(modernize-avoid-c-arrays)
+    char original_extension[EXTENSION_BYTES_SIZE];
     uint32_t original_size;
     uint32_t checksum_id = 0;
-    uint32_t block_size = 2 * 1024;
+    uint32_t block_size = BLOCK_SIZE;  // 64KB
     uint16_t version = 1;
     int codec_id = 1;
 };
 #pragma pack(pop)
 
-struct BlockHeader{
+struct BlockHeader
+{
     uint32_t block_seq_num = 0;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
-    bool operator<(const BlockHeader& other) const {
-        return block_seq_num < other.block_seq_num;
-    }
+    auto operator<(const BlockHeader& other) const { return block_seq_num < other.block_seq_num; }
 };
 
-inline void write_u32_le(std::ostream& out, uint32_t value){
+/*inline void write_u32_le(std::ostream& out, uint32_t value)
+{
     unsigned char bytes[4];
     bytes[0] = value & 0xFF;
     bytes[1] = (value >> 8) & 0xFF;
     bytes[2] = (value >> 16) & 0xFF;
     bytes[3] = (value >> 24) & 0xFF;
     out.write(reinterpret_cast<char*>(bytes), 4);
-}
+}*/
 
-class ContainerWriter {
-public:
+class ContainerWriter
+{
+   public:
     explicit ContainerWriter(std::string& filePath, const GlobalHeader& gHeader);
-    void writeBlock(BlockHeader& bheader, char* data);
+    void writeBlock(BlockHeader& bheader, std::vector<Match>& matches);
     void finalize();
     ~ContainerWriter();
-private:
+
+   private:
     std::ofstream out_;
     BufferedWriter writer_;
 };
 
-class ContainerReader {
-public:
+class ContainerReader
+{
+   public:
     explicit ContainerReader(const std::string& input_path);
     GlobalHeader readGlobalHeader(const std::string& path);
     std::map<BlockHeader, char*> readAllBlocks();
     ~ContainerReader();
-private:
+
+   private:
     std::ifstream in_;
     GlobalHeader gHeader_{};
     uint32_t numberOfBlocks;
     std::vector<BlockHeader> blocks;
     BufferedReader reader_;
 };
-

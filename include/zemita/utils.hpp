@@ -6,22 +6,22 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <print>
 #include <span>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-const int READER_BUFFER_SIZE = 6 * 1024;
-const int WRITER_BUFFER_SIZE = 4 * 1024;
+const int BLOCK_SIZE = 64 * 1024;
+const int READER_BUFFER_SIZE = 128 * 1024;
+const int WRITER_BUFFER_SIZE = 64 * 1024;
 const int SEARCH_WINDOW_SIZE = 32 * 1024;
-const int LOOKAHEAD_BUFFER_SIZE = 258 * 1024;
+const int LOOKAHEAD_BUFFER_SIZE = 258;
 
 struct Match
 {
-    std::tuple<int, int> offset;
-    int length;
-    char next;
+    uint16_t length;
+    uint16_t offset;
 };
 
 namespace Utils
@@ -72,30 +72,15 @@ static auto findLastMatch(std::deque<char>& deq, char character)
     {
         auto newIndex = std::distance(deq.begin(), it);
 
-        if (!matchIndexes.empty() && matchIndexes.back() == newIndex - 1)
-        {
-            matchIndexes.pop_back();
-        }
         matchIndexes.push_back(newIndex);
         it++;
     }
     return matchIndexes;
 }
 
-static auto ahBufferContainsMatch(std::deque<char>& aheadBuffer, std::vector<char>& placeholder)
+static auto hashNextThreeBytes(std::vector<char>& buffer, const int& index)
 {
-    auto size = static_cast<int>(placeholder.size());
-    if (aheadBuffer.size() < placeholder.size())
-    {
-        return false;
-    }
-    std::ranges::subrange sub(aheadBuffer.begin(), aheadBuffer.begin() + size);
-    std::vector<char> subVector(sub.begin(), sub.end());
-    return subVector == placeholder;
-}
-
-static auto repeat_vector_N(std::vector<char>& vec, int n){
-    
+    return buffer[index] + (buffer[index + 1] << 8) + (buffer[index + 2] << 16);
 }
 
 }  // namespace Utils

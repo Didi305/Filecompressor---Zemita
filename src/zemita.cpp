@@ -28,6 +28,7 @@ void ZemitaApp::compress(const std::string& input_path) const
                   in_path.extension().string().erase(0, 1).c_str());
     ContainerWriter writer(filePath, gHeader);
     std::cout << "Opening path: " << std::filesystem::absolute(input_path) << "\n";
+
     BufferedReader reader(input_path, READER_BUFFER_SIZE);
     int iterator = 0;
     uint32_t uncompressed_size = gHeader.original_size;
@@ -38,19 +39,15 @@ void ZemitaApp::compress(const std::string& input_path) const
         bHeader.compressed_size = std::min(uncompressed_size, gHeader.block_size);
 
         bHeader.uncompressed_size = uncompressed_size;
-        uint32_t diff = gHeader.original_size - bHeader.uncompressed_size;
+
         uncompressed_size -= bHeader.compressed_size;
 
         std::vector<char> buffer(bHeader.compressed_size);
-        auto dataRead = reader.read(buffer.data(), bHeader.compressed_size);
-        for (int iterator = 0; iterator < sizeof(bHeader); ++iterator)
-        {
-            std::println("%02X ", static_cast<unsigned char>(buffer[iterator]));
-        }
+        reader.read(buffer.data(), bHeader.compressed_size);
         auto matchies = codec_->compress(buffer);
         char* data = buffer.data();
-        writer.writeBlock(bHeader, data);
-        std::println("uncompressed size left: {}", uncompressed_size);
+        writer.writeBlock(bHeader, matchies);
+
         iterator++;
     }
     writer.finalize();
