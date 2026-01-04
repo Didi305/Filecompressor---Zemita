@@ -1,5 +1,7 @@
 #include "io/buffered_writer.hpp"
 
+#include "tracy/public/tracy/Tracy.hpp"
+
 BufferedWriter::BufferedWriter(const std::string& filePath, const uint32_t bufferSize)
     : out_(filePath, std::ios::binary), bufferSize_(bufferSize), buffer_(std::vector<char>(bufferSize))
 {

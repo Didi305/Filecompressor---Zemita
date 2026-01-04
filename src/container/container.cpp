@@ -7,6 +7,8 @@
 #include <print>
 #include <string>
 
+#include "tracy/public/tracy/Tracy.hpp"
+
 ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) : writer_(filePath, BLOCK_SIZE)
 {
     std::println("tried adding header");

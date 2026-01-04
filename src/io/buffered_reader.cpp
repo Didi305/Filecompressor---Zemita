@@ -1,6 +1,8 @@
 #include <cstdint>
 #include <io/buffered_reader.hpp>
 
+#include "tracy/public/tracy/Tracy.hpp"
+
 BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize)
     : in_(filePath, std::ios::binary), buffer_(bufferSize), bufferSize_(bufferSize), bufferFilled_(0), readPos_(0)
 {
@@ -13,8 +15,7 @@ BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize)
 
 void BufferedReader::refillBuffer()
 {
-    if (in_.eof() || in_.fail())
-        in_.clear();  // 🔥 Reset fail/eof flags
+    ZoneScoped if (in_.eof() || in_.fail()) in_.clear();  // 🔥 Reset fail/eof flags
 
     buffer_.resize(bufferSize_);
     in_.read(buffer_.data(), buffer_.size());

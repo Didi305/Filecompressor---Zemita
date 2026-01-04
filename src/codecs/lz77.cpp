@@ -69,7 +69,6 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
             auto matchStartIndex = masterBuffer.getWindowEndIndex();
             for (auto index : matchIndexes)
             {
-                ZoneScopedN("Step 4: Checking indexes");
                 int matchLength = 3;
                 if (maxLength >= 8)
                 {
@@ -83,9 +82,9 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
                 auto windowFrontIndex = masterBuffer.getWindowFrontIndex();
 
                 lookAheadFrontIndex = (lookAheadFrontIndex + 3) % capacity_;
+                ZoneScopedN("Step 5: looking for longest match");
                 while (lookAheadFrontIndex != lookAheadEndIndex)
                 {
-                    ZoneScopedN("Step 5: looking for longest match");
                     auto upcomingChar = ringBuffer[lookAheadFrontIndex];
                     if (!(ringBuffer[(index + matchLength) % capacity_] == upcomingChar))
                     {
@@ -105,13 +104,13 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
                     bestIndex = index;
                 }
             }
-            auto buffer = masterBuffer.getBuffer();
             auto aheadEndIndex = masterBuffer.getAheadEndIndex();
+            ZoneScopedN("Step 6: Filling hashes");
             for (int i{0}; i < maxLength; i += 3)
             {
-                ZoneScopedN("Step 6: Filling hashes");
                 int pos = (matchStartIndex + i) % capacity_;
-                auto hash = LZ77::hashNextThreeBytes(buffer, capacity_, pos);
+                auto hash = LZ77::hashNextThreeBytes(ringBuffer, capacity_, pos);
+                int currentHash;
 
                 auto iterator = match_map.find(hash);
                 if (iterator != match_map.end())
