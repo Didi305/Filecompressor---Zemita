@@ -15,3 +15,7 @@ CMakeCache.txt
 *.lib
 *.log
 *.cache
+/tracy
+/src/tracy/
+/test/
+

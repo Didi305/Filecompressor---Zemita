@@ -9,6 +9,9 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(TRACY_ENABLE "Enable Tracy profiler" ON)
+set(TRACY_NO_SYSTEM_TRACING ON CACHE BOOL "Disable system tracing")
 # Clang-Tidy
 set(CMAKE_CXX_CLANG_TIDY
     clang-tidy;
@@ -32,3 +35,4 @@ option(ZEMITA_INSTALL   "Enable install rules"               ON)
 
 # Core code lives in src/
 add_subdirectory(src)
+add_subdirectory(tracy)

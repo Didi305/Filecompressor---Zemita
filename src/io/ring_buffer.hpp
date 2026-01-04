@@ -139,7 +139,7 @@ class RingBuffer
     }
     void pushIndex(T value)
     {
-        if (rbuffer_.size() < 32)
+        if (rbuffer_.size() < 16)
         {
             rbuffer_.push_back(value);
             aheadEnd_ = (aheadEnd_ + 1) % capacity_;

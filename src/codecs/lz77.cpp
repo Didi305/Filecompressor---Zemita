@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "tracy/public/tracy/Tracy.hpp"
+
 LZ77Codec::LZ77Codec(int windowSize, uint16_t lookAHead)
     : capacity_(windowSize + lookAHead), masterBuffer(windowSize + lookAHead)
 {
@@ -10,6 +12,7 @@ LZ77Codec::LZ77Codec(int windowSize, uint16_t lookAHead)
 
 auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
 {
+    ZoneScoped;
     auto LASIZE = masterBuffer.lookaheadSize();
     auto availableDataSize =
         std::min(LOOKAHEAD_BUFFER_SIZE, static_cast<int>(blockData.size())) - masterBuffer.lookaheadSize();
@@ -35,6 +38,7 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
 
         if (!((masterBuffer.lookaheadSize() >= 3)))
         {
+            ZoneScopedN("Step 1: Literal");
             matches.push_back(
                 {.length = 0, .offset = static_cast<uint16_t>(ringBuffer[masterBuffer.getAheadFrontIndex()])});
             masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
@@ -42,11 +46,12 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
             masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
             length++;
         }
-        else if (!match_map.contains(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex())))
+        else if (!match_map.contains(LZ77::hashNextThreeBytes(ringBuffer, capacity_, masterBuffer.getWindowEndIndex())))
         {
+            ZoneScopedN("Step 2: Adding hash to map");
             matches.push_back(
                 {.length = 0, .offset = static_cast<uint16_t>(ringBuffer[masterBuffer.getAheadFrontIndex()])});
-            match_map.emplace(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex()),
+            match_map.emplace(LZ77::hashNextThreeBytes(ringBuffer, capacity_, masterBuffer.getWindowEndIndex()),
                               RingBuffer<int>(MAX_NUMBER_MATCH_OPTIONS, {masterBuffer.getAheadFrontIndex()}));
             masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
             masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
@@ -56,15 +61,20 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
         else
         {
             auto matchIndexes =
-                match_map.at(LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex())).getBuffer();
-            auto hash1 = LZ77::hashNextThreeBytes(masterBuffer, masterBuffer.getWindowEndIndex());
+                match_map.at(LZ77::hashNextThreeBytes(ringBuffer, capacity_, masterBuffer.getWindowEndIndex()))
+                    .getBuffer();
 
             int maxLength = 3;
             int bestIndex = 0;
             auto matchStartIndex = masterBuffer.getWindowEndIndex();
             for (auto index : matchIndexes)
             {
+                ZoneScopedN("Step 4: Checking indexes");
                 int matchLength = 3;
+                if (maxLength >= 8)
+                {
+                    break;
+                }
                 if (!masterBuffer.isInWindow(index))
                     continue;  // quick check first
                 auto lookAheadFrontIndex = masterBuffer.getAheadFrontIndex();
@@ -75,6 +85,7 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
                 lookAheadFrontIndex = (lookAheadFrontIndex + 3) % capacity_;
                 while (lookAheadFrontIndex != lookAheadEndIndex)
                 {
+                    ZoneScopedN("Step 5: looking for longest match");
                     auto upcomingChar = ringBuffer[lookAheadFrontIndex];
                     if (!(ringBuffer[(index + matchLength) % capacity_] == upcomingChar))
                     {
@@ -94,14 +105,18 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
                     bestIndex = index;
                 }
             }
-            for (int i{0}; i < maxLength; i++)
+            auto buffer = masterBuffer.getBuffer();
+            auto aheadEndIndex = masterBuffer.getAheadEndIndex();
+            for (int i{0}; i < maxLength; i += 3)
             {
+                ZoneScopedN("Step 6: Filling hashes");
                 int pos = (matchStartIndex + i) % capacity_;
-                auto hash = LZ77::hashNextThreeBytes(masterBuffer, pos);
+                auto hash = LZ77::hashNextThreeBytes(buffer, capacity_, pos);
 
-                if (match_map.contains(hash))
+                auto iterator = match_map.find(hash);
+                if (iterator != match_map.end())
                 {
-                    match_map.at(hash).pushIndex(pos);
+                    iterator->second.pushIndex(pos);
                 }
                 else
                 {
@@ -113,37 +128,7 @@ auto LZ77Codec::compress(std::span<const char> blockData) -> std::vector<Match>
             masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
             auto matchLength = maxLength;
             auto matchable = true;
-            while (!masterBuffer.lookAheadEmpty() && matchable)
-            {
-                auto subWindow = masterBuffer.getWindowRange(bestIndex, matchLength);
-                auto subAhead = masterBuffer.getAheadRange(blockData, masterBuffer.getAheadFrontIndex(),
-                                                           blockDataOffset, matchLength);
-                if (subWindow == subAhead)
-                {
-                    maxLength += matchLength;
-                    masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + matchLength);
-                    masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
-                    masterBuffer.refillLookahead(blockDataOffset, blockData, matchLength);
-                }
-                else
-                {
-                    for (int i{}; i < masterBuffer.lookaheadSize(); i++)
-                    {
-                        if (subWindow[i] == subAhead[i])
-                        {
-                            masterBuffer.setAheadFront(masterBuffer.getAheadFrontIndex() + 1);
-                            masterBuffer.setWindowEnd(masterBuffer.getAheadFrontIndex());
-                            masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
-                            matchLength++;
-                        }
-                        else
-                        {
-                            matchable = false;
-                            break;
-                        }
-                    }
-                }
-            }
+
             int offset = matchStartIndex - bestIndex;
             if (offset < 0)
                 offset += capacity_;

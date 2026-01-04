@@ -3,6 +3,9 @@
 #include <iostream>
 #include <print>
 #include <zemita.hpp>
+
+#include "tracy/public/tracy/Tracy.hpp"
+
 ZemitaApp::ZemitaApp(std::unique_ptr<ICodec> codec) : codec_(std::move(codec))
 {
     std::println("Zemita App Initiated with Codec: ");
@@ -10,6 +13,7 @@ ZemitaApp::ZemitaApp(std::unique_ptr<ICodec> codec) : codec_(std::move(codec))
 
 void ZemitaApp::compress(const std::string& input_path) const
 {
+    ZoneScoped;
     namespace fs = std::filesystem;
     std::ifstream input_reader(input_path, std::ios::binary);
     if (!fs::exists(input_path))

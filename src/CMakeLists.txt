@@ -9,6 +9,7 @@ add_library(zemita
   io/buffered_writer.cpp
   codecs/lz77.cpp
 )
+target_link_libraries(zemita PUBLIC TracyClient)
 include(GNUInstallDirs)
 add_library(zemita::zemita ALIAS zemita)
 
@@ -17,6 +18,7 @@ target_include_directories(zemita
   PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tracy/public>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
