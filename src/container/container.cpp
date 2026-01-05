@@ -27,7 +27,7 @@ void ContainerWriter::finalize()
     writer_.flush();
 }
 
-void ContainerWriter::writeBlock(BlockHeader& bHeader, std::vector<Match>& matches)
+void ContainerWriter::writeBlock(BlockHeader& bHeader, const std::vector<Match>& matches)
 {
     writer_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
     writer_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));

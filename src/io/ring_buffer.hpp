@@ -83,7 +83,6 @@ class RingBuffer
 
     auto refillLookahead(int& blockDataOffset, std::span<const char>& data, size_t refillSize)
     {
-        
         size_t refiller = std::min(data.size() - blockDataOffset, refillSize);
         for (size_t i{refiller}; i > 0; i--)
         {
@@ -136,7 +135,7 @@ class RingBuffer
     }
     void pushIndex(T value)
     {
-        if (rbuffer_.size() < 16)
+        if (rbuffer_.size() < 8)
         {
             rbuffer_.push_back(value);
             aheadEnd_ = (aheadEnd_ + 1) % capacity_;

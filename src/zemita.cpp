@@ -38,7 +38,6 @@ void ZemitaApp::compress(const std::string& input_path) const
     uint32_t uncompressed_size = gHeader.original_size;
     while (uncompressed_size > 0)
     {
-        ZoneScopedN("app comp");
         BlockHeader bHeader{};
         bHeader.block_seq_num = iterator;
         bHeader.compressed_size = std::min(uncompressed_size, gHeader.block_size);
@@ -49,9 +48,7 @@ void ZemitaApp::compress(const std::string& input_path) const
 
         std::vector<char> buffer(bHeader.compressed_size);
         reader.read(buffer.data(), bHeader.compressed_size);
-        auto matchies = codec_->compress(buffer);
-        char* data = buffer.data();
-        writer.writeBlock(bHeader, matchies);
+        writer.writeBlock(bHeader, codec_->compress(buffer));
 
         iterator++;
     }

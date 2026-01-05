@@ -5,7 +5,7 @@
 #include "codecs/ICodec.hpp"
 #include "zemita/utils.hpp"
 
-const int MAX_NUMBER_MATCH_OPTIONS = 16;
+const int MAX_NUMBER_MATCH_OPTIONS = 8;
 const int SECOND_DIGIT_SHIFTER = 8;
 const int THIRD_DIGIT_SHIFTER = 16;
 namespace LZ77
@@ -41,7 +41,7 @@ class LZ77Codec : public ICodec
    public:
     explicit LZ77Codec(int windowSize, uint16_t lookAhead);
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
-    std::vector<Match> compress(std::span<const char> blockData) override;
+    const std::vector<Match> compress(std::span<const char> blockData) override;
     // NOLINTNEXTLINE(modernize-use-trailing-return-type)
     std::vector<char> decompress(std::span<const Match> matches) override;
 };

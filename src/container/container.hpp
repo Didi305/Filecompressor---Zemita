@@ -49,7 +49,7 @@ class ContainerWriter
 {
    public:
     explicit ContainerWriter(std::string& filePath, const GlobalHeader& gHeader);
-    void writeBlock(BlockHeader& bheader, std::vector<Match>& matches);
+    void writeBlock(BlockHeader& bheader, const std::vector<Match>& matches);
     void finalize();
     ~ContainerWriter();
 

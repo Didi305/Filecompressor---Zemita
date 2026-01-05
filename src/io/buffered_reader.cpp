@@ -15,7 +15,8 @@ BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize)
 
 void BufferedReader::refillBuffer()
 {
-    ZoneScoped if (in_.eof() || in_.fail()) in_.clear();  // 🔥 Reset fail/eof flags
+    if (in_.eof() || in_.fail())
+        in_.clear();  // 🔥 Reset fail/eof flags
 
     buffer_.resize(bufferSize_);
     in_.read(buffer_.data(), buffer_.size());
