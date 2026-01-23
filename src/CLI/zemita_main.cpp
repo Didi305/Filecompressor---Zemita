@@ -3,7 +3,7 @@
 #include "codecs/lz77.hpp"
 #include "zemita.hpp"
 #include "zemita/utils.hpp"
-#include "tracy/public/tracy/Tracy.hpp"
+
 #ifdef _WIN32
 #include <windows.h>   // ← first
 #include <commdlg.h>   // ← second
@@ -34,7 +34,6 @@ std::string openFileDialog()
 
 int main(int argc, char** argv)
 {
-
     auto codec_ptr = std::make_unique<LZ77Codec>(SEARCH_WINDOW_SIZE, LOOKAHEAD_BUFFER_SIZE);
     std::string filePath = openFileDialog();
     if (filePath.empty())
@@ -46,7 +45,7 @@ int main(int argc, char** argv)
     try
     {
         ZemitaApp app(std::move(codec_ptr));
-        app.compress(filePath);
+        app.decompress(filePath);
     }
     catch (const std::exception& e)
     {

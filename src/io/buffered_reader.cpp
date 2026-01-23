@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <io/buffered_reader.hpp>
 
-#include "tracy/public/tracy/Tracy.hpp"
+#include "tracy/Tracy.hpp"
 
 BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize)
     : in_(filePath, std::ios::binary), buffer_(bufferSize), bufferSize_(bufferSize), bufferFilled_(0), readPos_(0)

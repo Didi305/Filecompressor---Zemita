@@ -20,16 +20,15 @@ struct GlobalHeader
     // NOLINTNEXTLINE(modernize-avoid-c-arrays)
     char original_extension[EXTENSION_BYTES_SIZE];
     uint32_t original_size;
-    uint32_t checksum_id = 0;
     uint32_t block_size = BLOCK_SIZE;  // 64KB
-    uint16_t version = 1;
-    int codec_id = 1;
+    uint8_t version = 1;
+    uint8_t codec_id = 1;
 };
 #pragma pack(pop)
 
 struct BlockHeader
 {
-    uint32_t block_seq_num = 0;
+    uint16_t block_seq_num = 0;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
     auto operator<(const BlockHeader& other) const { return block_seq_num < other.block_seq_num; }
@@ -50,8 +49,10 @@ class ContainerWriter
    public:
     explicit ContainerWriter(std::string& filePath, const GlobalHeader& gHeader);
     void writeBlock(BlockHeader& bheader, const std::vector<Match>& matches);
+    void write(const char* toBeWrittenData, size_t datasize);
     void finalize();
     ~ContainerWriter();
+    auto getWriter() { return &writer_; };
 
    private:
     std::ofstream out_;
@@ -63,7 +64,7 @@ class ContainerReader
    public:
     explicit ContainerReader(const std::string& input_path);
     GlobalHeader readGlobalHeader(const std::string& path);
-    std::map<BlockHeader, char*> readAllBlocks();
+    std::map<BlockHeader, std::vector<Match>> readAllBlocks();
     ~ContainerReader();
 
    private:

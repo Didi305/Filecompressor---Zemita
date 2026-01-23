@@ -4,7 +4,7 @@
 #include <print>
 #include <zemita.hpp>
 
-#include "tracy/public/tracy/Tracy.hpp"
+#include "tracy/Tracy.hpp"
 
 ZemitaApp::ZemitaApp(std::unique_ptr<ICodec> codec) : codec_(std::move(codec))
 {
@@ -29,7 +29,7 @@ void ZemitaApp::compress(const std::string& input_path) const
     GlobalHeader gHeader;
     gHeader.original_size = fs::file_size(input_path);
     std::snprintf(gHeader.original_extension, sizeof(gHeader.original_extension), "%s",
-                  in_path.extension().string().erase(0, 1).c_str());
+                  in_path.extension().string().c_str());
     ContainerWriter writer(filePath, gHeader);
     std::cout << "Opening path: " << std::filesystem::absolute(input_path) << "\n";
 
@@ -48,7 +48,7 @@ void ZemitaApp::compress(const std::string& input_path) const
 
         std::vector<char> buffer(bHeader.compressed_size);
         reader.read(buffer.data(), bHeader.compressed_size);
-        writer.writeBlock(bHeader, codec_->compress(buffer));
+        writer.writeBlock(bHeader, codec_->compress(buffer, writer.getWriter(), iterator));
 
         iterator++;
     }
@@ -58,7 +58,6 @@ void ZemitaApp::compress(const std::string& input_path) const
 void ZemitaApp::decompress(const std::string& input_path) const
 {
     namespace fs = std::filesystem;
-    std::map<BlockHeader, char*> blockMap;
     if (!fs::exists(input_path))
     {
         std::cerr << "❌ File not found: " << input_path << "\n";
@@ -69,16 +68,16 @@ void ZemitaApp::decompress(const std::string& input_path) const
     ContainerReader reader(input_path);
     GlobalHeader gHeader = reader.readGlobalHeader(input_path);
 
-    std::string filePath = in_path.stem().string() + gHeader.original_extension;
+    std::string filePath = in_path.stem().string() + "_TEST" + gHeader.original_extension;
     BufferedWriter writer(filePath, WRITER_BUFFER_SIZE);
-    blockMap = reader.readAllBlocks();
+    auto blockMap = reader.readAllBlocks();
     std::println("extension in header: {}", gHeader.original_extension);
-    for (auto it = blockMap.begin(); it != blockMap.end(); ++it)
+    std::vector<char> fullFile;
+    for (auto& [header, matches] : blockMap)
     {
-        std::println("writing data from block: {} that has the following data: {}", it->first.block_seq_num,
-                     it->second);
-        writer.write(it->second, it->first.compressed_size);
+        std::println("Decompressing block {} with {} matches", header.block_seq_num, matches.size());
+        auto decompressed = codec_->decompress(matches, fullFile);
+        writer.write(decompressed.data(), decompressed.size());
     }
     writer.flush();
-    std::print("typ shit");
 }

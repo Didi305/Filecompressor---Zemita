@@ -7,7 +7,7 @@
 #include <print>
 #include <string>
 
-#include "tracy/public/tracy/Tracy.hpp"
+#include "tracy/Tracy.hpp"
 
 ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) : writer_(filePath, BLOCK_SIZE)
 {
@@ -27,8 +27,14 @@ void ContainerWriter::finalize()
     writer_.flush();
 }
 
+void ContainerWriter::write(const char* toBeWrittenData, size_t dataSize)
+{
+    writer_.write(toBeWrittenData, dataSize);
+}
+
 void ContainerWriter::writeBlock(BlockHeader& bHeader, const std::vector<Match>& matches)
 {
+    bHeader.compressed_size = matches.size() * sizeof(Match);
     writer_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
     writer_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
     writer_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
@@ -63,21 +69,22 @@ ContainerReader::~ContainerReader()
     }
 }
 
-std::map<BlockHeader, char*> ContainerReader::readAllBlocks()
-{  // after global header
+std::map<BlockHeader, std::vector<Match>> ContainerReader::readAllBlocks()
+{
     std::cout << "readAllBlocks called!\n";
-    std::map<BlockHeader, char*> blockMap;
+    std::map<BlockHeader, std::vector<Match>> blockMap;
     uint32_t numberOfBlocks = blocks.size();
-    std::print("seq0num: ", blocks[0].block_seq_num);
     size_t iterator{};
     while (iterator < numberOfBlocks)
     {
         reader_.read(reinterpret_cast<char*>(&blocks[iterator]), sizeof(BlockHeader));
-        std::print("seq num: ", blocks[iterator].block_seq_num);
-        char* blockData = new char[blocks[iterator].compressed_size];
-        reader_.read(blockData, blocks[iterator].compressed_size);
-        blockMap[blocks[iterator]] = blockData;
-        std::println("Data read from block {} is: {}", blocks[iterator].block_seq_num, blockData);
+        std::println("Reading block {} with compressed_size {}", blocks[iterator].block_seq_num,
+                     blocks[iterator].compressed_size);
+
+        size_t matchCount = blocks[iterator].compressed_size / sizeof(Match);
+        std::vector<Match> matches(matchCount);
+        reader_.read(reinterpret_cast<char*>(matches.data()), blocks[iterator].compressed_size);
+        blockMap[blocks[iterator]] = std::move(matches);
         iterator++;
     }
 

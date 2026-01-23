@@ -1,0 +1,11 @@
+CompileFlags:
+  Compiler: clang++
+  Add:
+    - "-std=c++23"
+    - "-IC:/Users/giler/Desktop/C++/Filecompressor---Zemita/src"
+    - "-IC:/Users/giler/Desktop/C++/Filecompressor---Zemita/include"
+    - "-IC:/Users/giler/Desktop/C++/Filecompressor---Zemita/include/unordered_dense/include"
+    - "-IC:/Users/giler/Desktop/C++/Filecompressor---Zemita/external/tracy/public"
+
+Diagnostics:
+  UnusedIncludes: None
