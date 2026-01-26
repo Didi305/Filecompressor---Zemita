@@ -10,17 +10,17 @@ LZ77Codec::LZ77Codec(int windowSize, uint16_t lookAHead)
 {
 }
 
-const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, BufferedWriter& writer, int number)
+auto LZ77Codec::compress(std::span<const char> blockData, BufferedWriter& writer, int number) -> int
 {
     ZoneScoped;
+    writer.reset();
+    std::vector<char> literals;
     auto availableDataSize =
         std::min(LOOKAHEAD_BUFFER_SIZE, static_cast<int>(blockData.size())) - masterBuffer.lookaheadSize();
     int blockDataOffset = 0;
     int outputPosition = 0;  // track how many bytes we've "output"
-
-    std::vector<Match> matches;
-
     std::vector<char>& ringBuffer = masterBuffer.getBuffer();
+
     auto front = masterBuffer.getAheadFrontIndex();
     if (front + availableDataSize <= capacity_)
     {
@@ -38,6 +38,24 @@ const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, Bu
 
     blockDataOffset += availableDataSize;
 
+    int numberOfLiterals = 0;
+    int literalsFlagBits = 0;
+
+    int numberOfMatches = 0;
+    int matchesFlagBits = 0;
+    auto addLiteral = [&](char c)
+    {
+        if (literals.size() >= 255)
+        {
+            uint8_t size = 255;
+            writer.write(reinterpret_cast<char*>(&size), sizeof(uint8_t));
+            writer.write(literals.data(), 255);
+            literalsFlagBits++;
+            literals.clear();
+        }
+        literals.push_back(c);
+        numberOfLiterals++;
+    };
     while (!masterBuffer.lookAheadEmpty())
     {
         int aheadFront = masterBuffer.getAheadFrontIndex();
@@ -48,8 +66,7 @@ const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, Bu
 
         if (!(atLeastThreeBytes))
         {
-            matches.push_back(
-                {.length = 0, .offset = static_cast<uint16_t>(static_cast<unsigned char>(ringBuffer[aheadFront]))});
+            addLiteral(ringBuffer[aheadFront]);
             aheadFront++;
             windowEnd = aheadFront;
             masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
@@ -61,11 +78,10 @@ const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, Bu
 
             if (match_table[slot].isEmpty())
             {
-                matches.push_back(
-                    {.length = 0, .offset = static_cast<uint16_t>(static_cast<unsigned char>(ringBuffer[aheadFront]))});
                 match_table[slot] = matchIndices(aheadFront);
                 masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
                 outputPosition++;
+                addLiteral(ringBuffer[aheadFront]);
                 aheadFront++;
                 windowEnd++;
             }
@@ -116,9 +132,7 @@ const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, Bu
                 // No valid match found - emit single literal
                 if (bestIndex < 0)
                 {
-                    matches.push_back(
-                        {.length = 0,
-                         .offset = static_cast<uint16_t>(static_cast<unsigned char>(ringBuffer[aheadFront]))});
+                    addLiteral(ringBuffer[aheadFront]);
                     match_table[slot].pushIndex(aheadFront);
                     aheadFront++;
                     windowEnd++;
@@ -153,43 +167,70 @@ const std::vector<Match> LZ77Codec::compress(std::span<const char> blockData, Bu
                     {
                         offset += capacity_;
                     }
-
-                    Match match = {.length = static_cast<uint16_t>(maxLength), .offset = static_cast<uint16_t>(offset)};
-                    matches.emplace_back(match);
+                    auto size = literals.size();
+                    if (size > 0)
+                    {
+                        writer.write(reinterpret_cast<char*>(&size), sizeof(uint8_t));
+                        writer.write(literals.data(), literals.size());
+                        literalsFlagBits++;
+                        literals.clear();
+                    }
+                    const char matchFlagBit = 0x00;
+                    writer.write(&matchFlagBit, sizeof(char));
+                    writer.write(reinterpret_cast<char*>(&maxLength), sizeof(uint16_t));
+                    writer.write(reinterpret_cast<char*>(&offset), sizeof(uint16_t));
                     outputPosition += maxLength;
+                    numberOfMatches++;
                 }
             }
         }
         masterBuffer.setAheadFront(aheadFront);
         masterBuffer.setWindowEnd(windowEnd);
     }
-    return matches;
+    if (!literals.empty())
+    {
+        auto size = literals.size();
+        writer.write(reinterpret_cast<char*>(&size), sizeof(uint8_t));
+        writer.write(literals.data(), literals.size());
+        literalsFlagBits++;
+    }
+    return numberOfLiterals + literalsFlagBits + (numberOfMatches * 5);
 };
 
-auto LZ77Codec::decompress(std::span<const Match> matches, std::vector<char>& full) -> std::vector<char>
+auto LZ77Codec::decompress(std::span<const char> data, std::vector<char>& full) -> std::vector<char>
 {
     std::vector<char> out;
+    auto readPos = 0;
+    uint16_t length, offset;
+    out.reserve(data.size() * 2);  // rough estimate
 
-    out.reserve(matches.size() * 2);  // rough estimate
-
-    for (const auto& match : matches)
+    while (readPos < data.size())
     {
-        if (match.length == 0)
+        if (data[readPos] == 0x00)
         {
-            // Literal: offset contains the byte value
-            full.push_back(static_cast<char>(match.offset));
-            out.push_back(static_cast<char>(match.offset));
-        }
-        else
-        {
-            // Back-reference: copy 'length' bytes from 'offset' positions back
-            size_t start = full.size() - match.offset;
-            for (uint16_t i = 0; i < match.length; i++)
+            readPos++;
+            std::memcpy(&length, &data[readPos], sizeof(uint16_t));
+            readPos += sizeof(uint16_t);
+            std::memcpy(&offset, &data[readPos], sizeof(uint16_t));
+            readPos += sizeof(uint16_t);
+
+            auto start = full.size() - offset;
+            for (uint16_t i = 0; i < length; i++)
             {
                 char byte = full[start + i];
                 full.push_back(byte);
                 out.push_back(byte);
             }
+            // Literal: offset contains the byte value
+        }
+        else
+        {
+            auto numberOfLiterals = static_cast<uint8_t>(data[readPos]);
+            readPos++;
+            full.insert(full.end(), data.begin() + readPos, data.begin() + readPos + numberOfLiterals);
+            out.insert(out.end(), data.begin() + readPos, data.begin() + readPos + numberOfLiterals);
+
+            readPos += numberOfLiterals;
         }
     }
 

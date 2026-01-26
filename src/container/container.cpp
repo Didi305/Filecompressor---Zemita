@@ -9,11 +9,11 @@
 
 #include "tracy/Tracy.hpp"
 
-ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) : writer_(filePath, BLOCK_SIZE)
+ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader)
+    : writer_(filePath, WRITER_BUFFER_SIZE)
 {
     std::println("tried adding header");
-    writer_.write(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
-    writer_.flush();
+    writer_.writeGlobalHeader(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
 }
 
 ContainerWriter::~ContainerWriter()
@@ -32,23 +32,19 @@ void ContainerWriter::write(const char* toBeWrittenData, size_t dataSize)
     writer_.write(toBeWrittenData, dataSize);
 }
 
-void ContainerWriter::writeBlock(BlockHeader& bHeader, const std::vector<Match>& matches)
+void ContainerWriter::writeBlock(BlockHeader& bHeader)
 {
-    bHeader.compressed_size = matches.size() * sizeof(Match);
-    writer_.write(reinterpret_cast<char*>(&bHeader.block_seq_num), sizeof(uint32_t));
-    writer_.write(reinterpret_cast<char*>(&bHeader.uncompressed_size), sizeof(uint32_t));
-    writer_.write(reinterpret_cast<char*>(&bHeader.compressed_size), sizeof(uint32_t));
-    for (auto& match : matches)
-    {
-        writer_.write(reinterpret_cast<const char*>(&match), sizeof(Match));
-    }
+    auto* buffer = writer_.getWriterBuffer();
+    memcpy(buffer->data(), reinterpret_cast<char*>(&bHeader), sizeof(bHeader));
+    writer_.flush();
+    writer_.reset();
 }
 
 #include <filesystem>
-ContainerReader::ContainerReader(const std::string& input_path) : reader_(input_path, 4 * 1024)
+ContainerReader::ContainerReader(const std::string& input_path) : reader_(input_path, READER_BUFFER_SIZE)
 {
 }
-GlobalHeader ContainerReader::readGlobalHeader(const std::string& path)
+auto ContainerReader::readGlobalHeader(const std::string& path) -> GlobalHeader
 {
     GlobalHeader gHeader{};
     std::println("size directly  from file: {}", std::filesystem::file_size(path));
@@ -69,10 +65,10 @@ ContainerReader::~ContainerReader()
     }
 }
 
-std::map<BlockHeader, std::vector<Match>> ContainerReader::readAllBlocks()
+auto ContainerReader::readAllBlocks() -> std::map<BlockHeader, std::vector<char>>
 {
     std::cout << "readAllBlocks called!\n";
-    std::map<BlockHeader, std::vector<Match>> blockMap;
+    std::map<BlockHeader, std::vector<char>> blockMap;
     uint32_t numberOfBlocks = blocks.size();
     size_t iterator{};
     while (iterator < numberOfBlocks)
@@ -81,10 +77,9 @@ std::map<BlockHeader, std::vector<Match>> ContainerReader::readAllBlocks()
         std::println("Reading block {} with compressed_size {}", blocks[iterator].block_seq_num,
                      blocks[iterator].compressed_size);
 
-        size_t matchCount = blocks[iterator].compressed_size / sizeof(Match);
-        std::vector<Match> matches(matchCount);
-        reader_.read(reinterpret_cast<char*>(matches.data()), blocks[iterator].compressed_size);
-        blockMap[blocks[iterator]] = std::move(matches);
+        std::vector<char> blockData(blocks[iterator].compressed_size);
+        reader_.read(reinterpret_cast<char*>(blockData.data()), blocks[iterator].compressed_size);
+        blockMap[blocks[iterator]] = std::move(blockData);
         iterator++;
     }
 

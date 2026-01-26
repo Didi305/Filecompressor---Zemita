@@ -28,7 +28,7 @@ struct GlobalHeader
 
 struct BlockHeader
 {
-    uint16_t block_seq_num = 0;
+    uint32_t block_seq_num;
     uint32_t uncompressed_size;
     uint32_t compressed_size;
     auto operator<(const BlockHeader& other) const { return block_seq_num < other.block_seq_num; }
@@ -48,7 +48,7 @@ class ContainerWriter
 {
    public:
     explicit ContainerWriter(std::string& filePath, const GlobalHeader& gHeader);
-    void writeBlock(BlockHeader& bheader, const std::vector<Match>& matches);
+    void writeBlock(BlockHeader& bheader);
     void write(const char* toBeWrittenData, size_t datasize);
     void finalize();
     ~ContainerWriter();
@@ -63,8 +63,8 @@ class ContainerReader
 {
    public:
     explicit ContainerReader(const std::string& input_path);
-    GlobalHeader readGlobalHeader(const std::string& path);
-    std::map<BlockHeader, std::vector<Match>> readAllBlocks();
+    auto readGlobalHeader(const std::string& path) -> GlobalHeader;
+    auto readAllBlocks() -> std::map<BlockHeader, std::vector<char>>;
     ~ContainerReader();
 
    private:

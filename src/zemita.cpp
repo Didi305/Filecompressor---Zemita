@@ -28,6 +28,7 @@ void ZemitaApp::compress(const std::string& input_path) const
     // Initialize gHeader
     GlobalHeader gHeader;
     gHeader.original_size = fs::file_size(input_path);
+    std::println("size in gheader:{}", gHeader.original_size);
     std::snprintf(gHeader.original_extension, sizeof(gHeader.original_extension), "%s",
                   in_path.extension().string().c_str());
     ContainerWriter writer(filePath, gHeader);
@@ -40,16 +41,15 @@ void ZemitaApp::compress(const std::string& input_path) const
     {
         BlockHeader bHeader{};
         bHeader.block_seq_num = iterator;
-        bHeader.compressed_size = std::min(uncompressed_size, gHeader.block_size);
 
         bHeader.uncompressed_size = uncompressed_size;
+        auto chtari = std::min(BLOCK_SIZE, static_cast<int>(uncompressed_size));
+        uncompressed_size -= chtari;
 
-        uncompressed_size -= bHeader.compressed_size;
-
-        std::vector<char> buffer(bHeader.compressed_size);
-        reader.read(buffer.data(), bHeader.compressed_size);
-        writer.writeBlock(bHeader, codec_->compress(buffer, writer.getWriter(), iterator));
-
+        std::vector<char> buffer(chtari);
+        reader.read(buffer.data(), chtari);
+        bHeader.compressed_size = codec_->compress(buffer, *writer.getWriter(), iterator);
+        writer.writeBlock(bHeader);
         iterator++;
     }
     writer.finalize();
@@ -73,10 +73,10 @@ void ZemitaApp::decompress(const std::string& input_path) const
     auto blockMap = reader.readAllBlocks();
     std::println("extension in header: {}", gHeader.original_extension);
     std::vector<char> fullFile;
-    for (auto& [header, matches] : blockMap)
+    for (auto& [header, data] : blockMap)
     {
-        std::println("Decompressing block {} with {} matches", header.block_seq_num, matches.size());
-        auto decompressed = codec_->decompress(matches, fullFile);
+        std::println("Decompressing block {} with {} data", header.block_seq_num, data.size());
+        auto decompressed = codec_->decompress(data, fullFile);
         writer.write(decompressed.data(), decompressed.size());
     }
     writer.flush();

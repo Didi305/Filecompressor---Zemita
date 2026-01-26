@@ -13,8 +13,8 @@
 #include <vector>
 
 const int BLOCK_SIZE = 64 * 1024;
-const int READER_BUFFER_SIZE = 128 * 1024;
-const int WRITER_BUFFER_SIZE = 64 * 1024;
+const int READER_BUFFER_SIZE = 80 * 1024;
+const int WRITER_BUFFER_SIZE = 128 * 1024;
 const int SEARCH_WINDOW_SIZE = 32 * 1024;
 const int LOOKAHEAD_BUFFER_SIZE = 258;
 
