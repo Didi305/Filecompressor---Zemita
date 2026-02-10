@@ -9,8 +9,7 @@
 
 #include "tracy/Tracy.hpp"
 
-ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader)
-    : writer_(filePath, WRITER_BUFFER_SIZE)
+ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) : writer_(filePath)
 {
     std::println("tried adding header");
     writer_.writeGlobalHeader(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
@@ -41,7 +40,7 @@ void ContainerWriter::writeBlock(BlockHeader& bHeader)
 }
 
 #include <filesystem>
-ContainerReader::ContainerReader(const std::string& input_path) : reader_(input_path, READER_BUFFER_SIZE)
+ContainerReader::ContainerReader(const std::string& input_path) : reader_(input_path)
 {
 }
 auto ContainerReader::readGlobalHeader(const std::string& path) -> GlobalHeader

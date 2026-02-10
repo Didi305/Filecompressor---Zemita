@@ -3,8 +3,8 @@
 
 #include "tracy/Tracy.hpp"
 
-BufferedReader::BufferedReader(const std::string& filePath, uint32_t bufferSize)
-    : in_(filePath, std::ios::binary), buffer_(bufferSize), bufferSize_(bufferSize), bufferFilled_(0), readPos_(0)
+BufferedReader::BufferedReader(const std::string& filePath)
+    : in_(filePath, std::ios::binary), buffer_(READER_BUFFER_SIZE), bufferFilled_(0), readPos_(0)
 {
     if (!in_.is_open())
     {
@@ -18,7 +18,7 @@ void BufferedReader::refillBuffer()
     if (in_.eof() || in_.fail())
         in_.clear();  // 🔥 Reset fail/eof flags
 
-    buffer_.resize(bufferSize_);
+    buffer_.resize(READER_BUFFER_SIZE);
     in_.read(buffer_.data(), buffer_.size());
     bufferFilled_ = static_cast<std::size_t>(in_.gcount());
     readPos_ = 0;

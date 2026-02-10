@@ -8,8 +8,9 @@
 #include "io/buffered_reader.hpp"
 #include "io/buffered_writer.hpp"
 
-const int MAGIC_BYTES_SIZE = 4;
-const int EXTENSION_BYTES_SIZE = 5;
+static constexpr uint8_t MAGIC_BYTES_SIZE = 4;
+static constexpr uint8_t EXTENSION_BYTES_SIZE = 5;
+static constexpr int BLOCK_SIZE = 64 * 1024;
 
 #pragma pack(push, 1)
 

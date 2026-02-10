@@ -12,4 +12,5 @@ class ICodec
 
     virtual int compress(std::span<const char> data, BufferedWriter& writer, int number) = 0;
     virtual std::vector<char> decompress(std::span<const char> data, std::vector<char>& full) = 0;
+    
 };

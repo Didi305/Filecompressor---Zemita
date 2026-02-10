@@ -4,12 +4,16 @@
 #include <print>
 #include <zemita.hpp>
 
+#include "codecs/deflate.hpp"
 #include "tracy/Tracy.hpp"
 
 ZemitaApp::ZemitaApp(std::unique_ptr<ICodec> codec) : codec_(std::move(codec))
 {
     std::println("Zemita App Initiated with Codec: ");
 }
+
+
+
 
 void ZemitaApp::compress(const std::string& input_path) const
 {
@@ -34,7 +38,7 @@ void ZemitaApp::compress(const std::string& input_path) const
     ContainerWriter writer(filePath, gHeader);
     std::cout << "Opening path: " << std::filesystem::absolute(input_path) << "\n";
 
-    BufferedReader reader(input_path, READER_BUFFER_SIZE);
+    BufferedReader reader(input_path);
     int iterator = 0;
     uint32_t uncompressed_size = gHeader.original_size;
     while (uncompressed_size > 0)
@@ -53,6 +57,7 @@ void ZemitaApp::compress(const std::string& input_path) const
         iterator++;
     }
     writer.finalize();
+    static_cast<DeflateCodec*>(codec_.get())->afterCompressionInfo();
 }
 
 void ZemitaApp::decompress(const std::string& input_path) const
@@ -69,7 +74,7 @@ void ZemitaApp::decompress(const std::string& input_path) const
     GlobalHeader gHeader = reader.readGlobalHeader(input_path);
 
     std::string filePath = in_path.stem().string() + "_TEST" + gHeader.original_extension;
-    BufferedWriter writer(filePath, WRITER_BUFFER_SIZE);
+    BufferedWriter writer(filePath);
     auto blockMap = reader.readAllBlocks();
     std::println("extension in header: {}", gHeader.original_extension);
     std::vector<char> fullFile;

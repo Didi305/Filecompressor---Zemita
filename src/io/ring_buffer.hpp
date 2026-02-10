@@ -153,6 +153,7 @@ class RingBuffer
     }
 
    private:
+    static constexpr uint16_t SEARCH_WINDOW_SIZE = 32 * 1024;
     std::vector<T> rbuffer_;
     int capacity_;
     int windowFront_ = 0;

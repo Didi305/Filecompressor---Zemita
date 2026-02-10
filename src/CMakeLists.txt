@@ -7,7 +7,9 @@ add_library(zemita
   container/index.cpp
   io/buffered_reader.cpp
   io/buffered_writer.cpp
-  codecs/lz77.cpp
+  codecs/lzss.cpp
+  codecs/deflate.cpp
+  codecs/huffmann.cpp
 )
 target_link_libraries(zemita PUBLIC Tracy::TracyClient)
 include(GNUInstallDirs)
