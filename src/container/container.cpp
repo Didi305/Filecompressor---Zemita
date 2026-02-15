@@ -11,7 +11,6 @@
 
 ContainerWriter::ContainerWriter(std::string& filePath, const GlobalHeader& gHeader) : writer_(filePath)
 {
-    std::println("tried adding header");
     writer_.writeGlobalHeader(reinterpret_cast<const char*>(&gHeader), sizeof(gHeader));
 }
 
@@ -46,14 +45,9 @@ ContainerReader::ContainerReader(const std::string& input_path) : reader_(input_
 auto ContainerReader::readGlobalHeader(const std::string& path) -> GlobalHeader
 {
     GlobalHeader gHeader{};
-    std::println("size directly  from file: {}", std::filesystem::file_size(path));
     reader_.read(reinterpret_cast<char*>(&gHeader.magicBytes), sizeof(gHeader));
-
-    std::println("size of the file from the global header: {}", gHeader.original_size);
-    std::println("extensssssss: {}", gHeader.original_extension);
     auto numberOfBlocks = std::ceil(double(gHeader.original_size) / gHeader.block_size);
     blocks.resize(numberOfBlocks);
-    std::println("size of t: {}", blocks.size());
     return gHeader;
 }
 ContainerReader::~ContainerReader()
@@ -66,15 +60,12 @@ ContainerReader::~ContainerReader()
 
 auto ContainerReader::readAllBlocks() -> std::map<BlockHeader, std::vector<char>>
 {
-    std::cout << "readAllBlocks called!\n";
     std::map<BlockHeader, std::vector<char>> blockMap;
     uint32_t numberOfBlocks = blocks.size();
     size_t iterator{};
     while (iterator < numberOfBlocks)
     {
         reader_.read(reinterpret_cast<char*>(&blocks[iterator]), sizeof(BlockHeader));
-        std::println("Reading block {} with compressed_size {}", blocks[iterator].block_seq_num,
-                     blocks[iterator].compressed_size);
 
         std::vector<char> blockData(blocks[iterator].compressed_size);
         reader_.read(reinterpret_cast<char*>(blockData.data()), blocks[iterator].compressed_size);
@@ -82,7 +73,6 @@ auto ContainerReader::readAllBlocks() -> std::map<BlockHeader, std::vector<char>
         iterator++;
     }
 
-    std::cout << "readAllBlocks returning!\n";
     std::cout << "Number of blocks read = " << blocks.size() << "\n";
     return blockMap;
 }

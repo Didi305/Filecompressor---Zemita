@@ -12,9 +12,6 @@ ZemitaApp::ZemitaApp(std::unique_ptr<ICodec> codec) : codec_(std::move(codec))
     std::println("Zemita App Initiated with Codec: ");
 }
 
-
-
-
 void ZemitaApp::compress(const std::string& input_path) const
 {
     ZoneScoped;
@@ -27,12 +24,12 @@ void ZemitaApp::compress(const std::string& input_path) const
     }
     fs::path in_path(input_path);
     // Prepare output path
-    std::string filePath = in_path.stem().string() + ".zem";
+    std::string filePath = (in_path.parent_path() / (in_path.stem().string() + ".zem")).string();
 
     // Initialize gHeader
     GlobalHeader gHeader;
     gHeader.original_size = fs::file_size(input_path);
-    std::println("size in gheader:{}", gHeader.original_size);
+
     std::snprintf(gHeader.original_extension, sizeof(gHeader.original_extension), "%s",
                   in_path.extension().string().c_str());
     ContainerWriter writer(filePath, gHeader);
@@ -73,14 +70,14 @@ void ZemitaApp::decompress(const std::string& input_path) const
     ContainerReader reader(input_path);
     GlobalHeader gHeader = reader.readGlobalHeader(input_path);
 
-    std::string filePath = in_path.stem().string() + "_TEST" + gHeader.original_extension;
+    std::string filePath =
+        (in_path.parent_path() / (in_path.stem().string() + "_TEST" + gHeader.original_extension)).string();
     BufferedWriter writer(filePath);
     auto blockMap = reader.readAllBlocks();
-    std::println("extension in header: {}", gHeader.original_extension);
+
     std::vector<char> fullFile;
     for (auto& [header, data] : blockMap)
     {
-        std::println("Decompressing block {} with {} data", header.block_seq_num, data.size());
         auto decompressed = codec_->decompress(data, fullFile);
         writer.write(decompressed.data(), decompressed.size());
     }

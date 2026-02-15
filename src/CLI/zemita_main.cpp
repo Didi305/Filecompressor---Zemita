@@ -1,51 +1,70 @@
-#include "CLI/zemita_main.hpp"
+#include <filesystem>
+#include <iostream>
+#include <string>
+#include <string_view>
 
 #include "codecs/deflate.hpp"
 #include "zemita.hpp"
-#include "zemita/utils.hpp"
 
-#ifdef _WIN32
-#include <windows.h>   // ← first
-#include <commdlg.h>   // ← second
-#endif
+static constexpr std::string_view USAGE =
+    "Usage: zemita <command> <file>\n"
+    "\n"
+    "Commands:\n"
+    "  compress   <file>   Compress a file into .zem format\n"
+    "  decompress <file>   Decompress a .zem file back to original\n"
+    "\n"
+    "Examples:\n"
+    "  zemita compress   photo.png\n"
+    "  zemita decompress photo.zem\n";
 
-std::string openFileDialog()
+auto main(int argc, char** argv) -> int
 {
-#ifdef _WIN32
-    char filename[MAX_PATH] = "";
-    OPENFILENAMEA ofn = {};  // Use {} instead of {0}
-    ofn.lStructSize = sizeof(ofn);
-    ofn.lpstrFilter = "All Files\0*.*\0";
-    ofn.lpstrFile = filename;
-    ofn.nMaxFile = MAX_PATH;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-    ofn.lpstrTitle = "Select input file";
-    if (GetOpenFileNameA(&ofn))
-        return filename;
-    else
-        return "";
-#else
-    std::string path;
-    std::cout << "Enter file path: ";
-    std::getline(std::cin, path);
-    return path;
-#endif
-}
-
-int main(int argc, char** argv)
-{
-    auto codec_ptr = std::make_unique<DeflateCodec>();
-    std::string filePath = openFileDialog();
-    if (filePath.empty())
+    if (argc < 2)
     {
-        std::cerr << "❌ No file selected.\n";
+        std::cerr << USAGE;
+        return 1;
+    }
+
+    std::string_view command = argv[1];
+
+    if (command == "--help" || command == "-h")
+    {
+        std::cout << USAGE;
+        return 0;
+    }
+
+    if (argc < 3)
+    {
+        std::cerr << "Error: missing file argument.\n\n" << USAGE;
+        return 1;
+    }
+
+    std::string filePath = argv[2];
+
+    if (!std::filesystem::exists(filePath))
+    {
+        std::cerr << "Error: file not found: " << filePath << "\n";
         return 1;
     }
 
     try
     {
-        ZemitaApp app(std::move(codec_ptr));
-        app.decompress(filePath);
+        auto codec = std::make_unique<DeflateCodec>();
+        ZemitaApp app(std::move(codec));
+
+        if (command == "compress" || command == "c")
+        {
+            app.compress(filePath);
+        }
+        else if (command == "decompress" || command == "d")
+        {
+            app.decompress(filePath);
+        }
+        else
+        {
+            std::cerr << "Error: unknown command '" << command << "'\n\n" << USAGE;
+            return 1;
+        }
     }
     catch (const std::exception& e)
     {
@@ -55,22 +74,3 @@ int main(int argc, char** argv)
 
     return 0;
 }
-
-/* void test_LZSS(const std::string& input)
-{
-    LZSSCodec codec(SEARCH_WINDOW_SIZE, LOOKAHEAD_BUFFER_SIZE);
-
-    auto compressed = codec.compress(std::span<const char>(input.data(), input.size()));
-};
-// NOLINTNEXTLINE(bugprone-exception-escape)
-auto main(int argc, char** argv) -> int
-{
-    std::print("Cpp version: {}", __cplusplus);
-
-    /* test_LZSS("A");               // one char
-    test_LZSS("ABCDEFG");         // no repeats
-    test_LZSS("AAAAAA");          // repeated
-    test_LZSS("ABCLKJPSABCABC");  // overlapping
-    test_LZSS("abracadabracbhnklaca");  // classic
-    test_LZSS("hello hello");           // common words
-} */

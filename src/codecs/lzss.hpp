@@ -7,7 +7,7 @@
 #include "io/ring_buffer.hpp"
 #include "zemita/utils.hpp"
 
-const int MAX_NUMBER_MATCH_OPTIONS = 16;
+const int MAX_NUMBER_MATCH_OPTIONS = 24;
 const int SECOND_DIGIT_SHIFTER = 8;
 const int THIRD_DIGIT_SHIFTER = 16;
 
@@ -34,14 +34,25 @@ struct Symbol
 
 struct matchIndices
 {
+    uint32_t generation = 0;
     uint8_t count = 0;
     std::array<int, MAX_NUMBER_MATCH_OPTIONS> indices;
     matchIndices() = default;
 
-    matchIndices(int& firstIndex) : count(1) { indices[0] = firstIndex; }
-    auto isEmpty() const { return count == 0; };
-    void pushIndex(int& idx)
+    void init(int firstIndex, uint32_t gen)
     {
+        generation = gen;
+        count = 1;
+        indices[0] = firstIndex;
+    }
+    [[nodiscard]] auto isEmpty(uint32_t gen) const { return generation != gen || count == 0; };
+    void pushIndex(int idx, uint32_t gen)
+    {
+        if (generation != gen)
+        {
+            generation = gen;
+            count = 0;
+        }
         indices[count % MAX_NUMBER_MATCH_OPTIONS] = idx;
         count++;
     }
@@ -55,7 +66,7 @@ class LZSSCodec
 
     static constexpr size_t SEARCH_WINDOW_SIZE = 32768;  // 32KB
     static constexpr size_t LOOKAHEAD_BUFFER_SIZE = 258;
-    static constexpr int TABLE_SIZE = 16777259;
+    static constexpr int TABLE_SIZE = 1 << 18;  // 262,144
     static constexpr size_t LENGTH_SYMBOL_TABLE_SIZE = 256;
     static constexpr size_t LITERAl_LENGTH_FREQ_ARRAY_SIZE = 286;
     static constexpr size_t OFFSET_FREQ_ARRAY_SIZE = 30;
@@ -67,6 +78,7 @@ class LZSSCodec
     uint16_t capacity_ = SEARCH_WINDOW_SIZE + LOOKAHEAD_BUFFER_SIZE;
     RingBuffer<char> masterBuffer; /* one buffer manages searchWindow and lookAhead*/
     std::vector<matchIndices> match_table;
+    uint32_t generation_ = 0;
 
    public:
     explicit LZSSCodec();

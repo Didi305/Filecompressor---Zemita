@@ -20,6 +20,7 @@ LZSSCodec::LZSSCodec() : masterBuffer(SEARCH_WINDOW_SIZE + LOOKAHEAD_BUFFER_SIZE
 auto LZSSCodec::compress(std::span<const char> blockData, BufferedWriter& writer, int number) -> int
 {
     ZoneScoped;
+    generation_++;
     writer.reset();
     std::vector<char> literals;
     auto availableDataSize = std::min(static_cast<int>(LOOKAHEAD_BUFFER_SIZE), static_cast<int>(blockData.size())) -
@@ -86,9 +87,9 @@ auto LZSSCodec::compress(std::span<const char> blockData, BufferedWriter& writer
         {
             int slot = hash % TABLE_SIZE;
 
-            if (match_table[slot].isEmpty())
+            if (match_table[slot].isEmpty(generation_))
             {
-                match_table[slot] = matchIndices(aheadFront);
+                match_table[slot].init(aheadFront, generation_);
                 masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
                 addLiteral(ringBuffer[aheadFront]);
                 litLenFreq[static_cast<uint8_t>(ringBuffer[aheadFront])]++;
@@ -103,10 +104,12 @@ auto LZSSCodec::compress(std::span<const char> blockData, BufferedWriter& writer
                 uint16_t maxLength = 3;
                 int bestIndex = -1;
                 auto matchStartIndex = windowEnd;
-                for (auto& index : matchIndexes.indices)
+                auto validCount = std::min(static_cast<int>(matchIndexes.count), MAX_NUMBER_MATCH_OPTIONS);
+                for (int j = 0; j < validCount; j++)
                 {
+                    int index = matchIndexes.indices[j];
                     int matchLength = 3;
-                    if (maxLength >= 32 || index < 0)
+                    if (maxLength >= 32)
                     {
                         break;
                     }
@@ -145,7 +148,7 @@ auto LZSSCodec::compress(std::span<const char> blockData, BufferedWriter& writer
                 {
                     addLiteral(ringBuffer[aheadFront]);
                     litLenFreq[static_cast<uint8_t>(ringBuffer[aheadFront])]++;
-                    match_table[slot].pushIndex(aheadFront);
+                    match_table[slot].pushIndex(aheadFront, generation_);
                     masterBuffer.refillLookahead(blockDataOffset, blockData, 1);
                     aheadFront++;
                     windowEnd++;
@@ -154,20 +157,21 @@ auto LZSSCodec::compress(std::span<const char> blockData, BufferedWriter& writer
                 else
                 {
                     // Valid match found - update hash table and emit match
-                    for (int i{0}; i < maxLength; i++)
+                    if (maxLength <= 16)
                     {
-                        int pos = (matchStartIndex + i) % capacity_;
-
-                        hash = LZSS::hashFunction(ringBuffer, capacity_, pos);
-                        int innerSlot = hash % TABLE_SIZE;
-                        if (match_table[innerSlot].count > 0)
+                        for (int i{0}; i < maxLength; i++)
                         {
-                            match_table[innerSlot].pushIndex(pos);
-                        }
-                        else
-                        {
-                            match_table[innerSlot].count++;
-                            match_table[innerSlot] = matchIndices(pos);
+                            int pos = (matchStartIndex + i) % capacity_;
+                            hash = LZSS::hashFunction(ringBuffer, capacity_, pos);
+                            int innerSlot = hash % TABLE_SIZE;
+                            if (!match_table[innerSlot].isEmpty(generation_))
+                            {
+                                match_table[innerSlot].pushIndex(pos, generation_);
+                            }
+                            else
+                            {
+                                match_table[innerSlot].init(pos, generation_);
+                            }
                         }
                     }
                     masterBuffer.refillLookahead(blockDataOffset, blockData, maxLength);
@@ -302,17 +306,15 @@ auto LZSSCodec::offsetToSymbol(uint16_t offset) -> Symbol
 
 auto LZSSCodec::afterCompressionInfo() -> void
 {
-    
     int nLiterals = 0;
     int nMatches = 0;
     for (size_t i{}; i <= 255; i++)
     {
         nLiterals += litLenFreq[i];
     }
-    
+
     for (size_t i{257}; i <= 285; i++)
     {
         nMatches += litLenFreq[i];
     }
-    
 };
